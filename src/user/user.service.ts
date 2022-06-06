@@ -10,7 +10,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UserService {
   constructor(@InjectRepository(UserRepository) private userRepository: UserRepository) {}
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    await Promise.all([this.checkId(createUserDto.id), this.checkEmail(createUserDto.email)]);
+    await Promise.all([
+      this.checkId(createUserDto.id),
+      this.checkEmail(createUserDto.email),
+      this.checkNickname(createUserDto.nickname),
+    ]);
     const result = await this.userRepository.insertUser(createUserDto);
     return result;
   }
@@ -18,14 +22,24 @@ export class UserService {
   async checkId(id: string): Promise<object> {
     const checkResult = await this.userRepository.selectUserById(id);
 
-    if (checkResult) errResponse(baseResponse.SIGNUP_REDUNDANT_ID);
+    if (checkResult) errResponse(baseResponse.REDUNDANT_ID);
     else return response(baseResponse.SIGNUP_ID_OK, null);
   }
 
   async checkEmail(email: string): Promise<object> {
     const checkResult = await this.userRepository.selectUserByEmail(email);
 
-    if (checkResult) errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL);
+    if (checkResult) errResponse(baseResponse.REDUNDANT_EMAIL);
     else return response(baseResponse.SIGNUP_EMAIL_OK, null);
+  }
+  async checkNickname(nickname: string): Promise<object> {
+    const checkResult = await this.userRepository.selectUserByNickname(nickname);
+
+    if (checkResult) errResponse(baseResponse.REDUNDANT_NICKNAME);
+    else return response(baseResponse.SIGNUP_NICKNAME_OK, null);
+  }
+
+  async findOneById(id: string): Promise<User> {
+    return this.userRepository.selectUserById(id);
   }
 }
