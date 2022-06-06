@@ -8,6 +8,7 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   SUCCESS: { "isSuccess": true, "code": 1000, "message": "성공" },
   SIGNUP_EMAIL_OK :{ "isSuccess": true, "code": 1001, "message": '사용가능한 이메일입니다.' },
   SIGNUP_ID_OK :{ "isSuccess": true, "code": 1002, "message": '사용가능한 아이디입니다.' },
+  SIGNUP_NICKNAME_OK :{ "isSuccess": true, "code": 1003, "message": '사용가능한 닉네임입니다.' },
 
   // Common
   TOKEN_EMPTY: { "isSuccess": false, "code": 2000, "message": "JWT 토큰을 입력해주세요." },
@@ -63,14 +64,14 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   REDUNDANT_ID: { "isSuccess": false, "code": 3002, "message": "중복된 아이디입니다." },
   REDUNDANT_NICKNAME: { "isSuccess": false, "code": 3003, "message": "중복된 닉네임입니다." },
   NOT_EXIST_UNIV: { "isSuccess": false, "code": 3004, "message": "등록되지 않은 대학교 이메일입니다." },
+  NOT_EXIST_USER: { "isSuccess": false, "code": 3005, "message": "존재하지 않는 회원입니다." },
+  DEACTIVATED_USER: { "isSuccess": false, "code": 3006, "message": "탈퇴된 회원입니다." },
 
-  SIGNIN_EMAIL_WRONG: { "isSuccess": false, "code": 3004, "message": "아이디가 잘못 되었습니다." },
-  SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3005, "message": "비밀번호가 잘못 되었습니다." },
+  SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3007, "message": "비밀번호가 잘못 되었습니다." },
   SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
   SIGNIN_WITHDRAWAL_ACCOUNT: { "isSuccess": false, "code": 3008, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },
 
 
-  USER_USERIDX_NOT_EXIST: { "isSuccess": false, "code": 3009, "message": "해당 회원이 존재하지 않습니다." },
 
 
   //Connection, Transaction 등의 서버 오류
