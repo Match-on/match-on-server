@@ -12,7 +12,7 @@ export class AuthService {
   async validateUser(id: string, password: string): Promise<any> {
     const user = await this.userService.findOneById(id);
     if (!user) errResponse(baseResponse.NOT_EXIST_USER);
-    else if (user.deletedAt !== null) errResponse(baseResponse.DEACTIVATED_USER);
+    else if (user.deletedAt !== null) errResponse(baseResponse.WITHDRAWAL_USER);
     const compareResult = await compare(password, user.password);
     if (!compareResult) {
       errResponse(baseResponse.SIGNIN_PASSWORD_WRONG);
