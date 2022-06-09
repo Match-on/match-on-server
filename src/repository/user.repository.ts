@@ -20,6 +20,11 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
+  async selectUserByIdx(userIdx: number): Promise<User> {
+    const user = await this.createQueryBuilder().where('userIdx = :userIdx', { userIdx: userIdx }).getOne();
+    return user;
+  }
+
   async selectUserByEmail(email: string): Promise<User> {
     const user = await this.findOne({
       where: { email: email },

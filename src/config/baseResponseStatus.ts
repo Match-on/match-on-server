@@ -65,11 +65,13 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   REDUNDANT_NICKNAME: { "isSuccess": false, "code": 3003, "message": "중복된 닉네임입니다." },
   NOT_EXIST_UNIV: { "isSuccess": false, "code": 3004, "message": "등록되지 않은 대학교 이메일입니다." },
   NOT_EXIST_USER: { "isSuccess": false, "code": 3005, "message": "존재하지 않는 회원입니다." },
-  DEACTIVATED_USER: { "isSuccess": false, "code": 3006, "message": "탈퇴된 회원입니다." },
+  WITHDRAWAL_USER: { "isSuccess": false, "code": 3006, "message": "탈퇴된 회원입니다." },
 
   SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3007, "message": "비밀번호가 잘못 되었습니다." },
-  SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
-  SIGNIN_WITHDRAWAL_ACCOUNT: { "isSuccess": false, "code": 3008, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },
+
+  ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
+  // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
+  // SIGNIN_WITHDRAWAL_ACCOUNT: { "isSuccess": false, "code": 3008, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },
 
 
 

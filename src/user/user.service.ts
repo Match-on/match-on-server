@@ -42,4 +42,8 @@ export class UserService {
   async findOneById(id: string): Promise<User> {
     return this.userRepository.selectUserById(id);
   }
+
+  async findOneByIdx(userIdx: number): Promise<User> {
+    return this.userRepository.selectUserByIdx(userIdx);
+  }
 }
