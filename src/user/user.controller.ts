@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
@@ -62,7 +62,29 @@ export class UserController {
 
     const updateResult = await this.userService.updateUser(userIdx, updateUserData);
     if (updateResult.affected == 1) {
-      return response(baseResponse.SUCCESS, updateResult);
+      return response(baseResponse.SUCCESS, { userIdx });
+    } else {
+      return errResponse(baseResponse.DB_ERROR);
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:userIdx')
+  async deleteUser(@User() user: any, @Param('userIdx', ParseIntPipe) userIdx: number) {
+    if (user.userIdx !== userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+
+    const userResult = await this.userService.findOneByIdx(userIdx);
+    if (!userResult) {
+      return errResponse(baseResponse.NOT_EXIST_USER);
+    } else if (!!userResult.deletedAt) {
+      return errResponse(baseResponse.WITHDRAWAL_USER);
+    }
+
+    const deleteResult = await this.userService.deleteUser(userIdx);
+    if (deleteResult.affected == 1) {
+      return response(baseResponse.SUCCESS, { userIdx });
     } else {
       return errResponse(baseResponse.DB_ERROR);
     }
