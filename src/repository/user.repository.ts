@@ -21,7 +21,10 @@ export class UserRepository extends Repository<User> {
   }
 
   async selectUserByIdx(userIdx: number): Promise<User> {
-    const user = await this.createQueryBuilder().where('userIdx = :userIdx', { userIdx: userIdx }).getOne();
+    const user = await this.createQueryBuilder()
+      .withDeleted()
+      .where('userIdx = :userIdx', { userIdx: userIdx })
+      .getOne();
     return user;
   }
 

@@ -36,7 +36,7 @@ export class CreateUserDto {
   readonly nickname: string;
   @IsString()
   @IsOptional()
-  @Matches(/(http(s)?:\/\/)([a-z0-9w]+.*)+[a-z0-9]{2,4}/gi)
+  @Matches(/(http(s)?:\/\/)([a-z0-9w]+.*)+[a-z0-9]{2,4}/i)
   readonly profileUrl: string;
   @IsString()
   @IsOptional()
