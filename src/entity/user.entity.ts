@@ -44,6 +44,8 @@ export class User {
 
   @Column({ type: 'char', default: 'Y' })
   status: string;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  accessedAt: Date;
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
   @UpdateDateColumn({ type: 'timestamp' })

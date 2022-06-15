@@ -4,7 +4,9 @@ import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/entity/user.entity';
 import { UserRepository } from 'src/repository/user.repository';
+import { UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -19,24 +21,31 @@ export class UserService {
     return result;
   }
 
-  async checkId(id: string): Promise<object> {
+  async updateUser(userIdx: number, updateUserData: UpdateUserDto): Promise<UpdateResult> {
+    if (!!updateUserData.nickname) await this.checkNickname(updateUserData.nickname);
+    const updateResult = await this.userRepository.update(userIdx, updateUserData);
+    console.log(updateResult);
+    return updateResult;
+  }
+
+  async checkId(id: string): Promise<any> {
     const checkResult = await this.userRepository.selectUserById(id);
 
     if (checkResult) errResponse(baseResponse.REDUNDANT_ID);
-    else return response(baseResponse.SIGNUP_ID_OK, null);
+    else return true;
   }
 
-  async checkEmail(email: string): Promise<object> {
+  async checkEmail(email: string): Promise<any> {
     const checkResult = await this.userRepository.selectUserByEmail(email);
 
     if (checkResult) errResponse(baseResponse.REDUNDANT_EMAIL);
-    else return response(baseResponse.SIGNUP_EMAIL_OK, null);
+    else return true;
   }
-  async checkNickname(nickname: string): Promise<object> {
+  async checkNickname(nickname: string): Promise<any> {
     const checkResult = await this.userRepository.selectUserByNickname(nickname);
 
     if (checkResult) errResponse(baseResponse.REDUNDANT_NICKNAME);
-    else return response(baseResponse.SIGNUP_NICKNAME_OK, null);
+    else return true;
   }
 
   async findOneById(id: string): Promise<User> {
