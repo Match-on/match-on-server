@@ -5,14 +5,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  // JoinTable,
-  // ManyToMany,
-  // OneToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
+import { UserTeam } from './user_team.entity';
 
 @Entity()
 export class User {
@@ -53,28 +52,8 @@ export class User {
   @DeleteDateColumn({ type: 'timestamp' })
   deletedAt: Date | null;
 
-  // @OneToMany(() => Space, (space) => space.owner, { nullable: true })
-  // ownSpaces: Space[];
-
-  // @OneToMany(() => Post, (post) => post.writer, { nullable: true })
-  // posts: Post[];
-
-  // @OneToMany(() => Chat, (chat) => chat.writer, { nullable: true })
-  // chats: Chat[];
-
-  // @ManyToMany(() => Space, (space) => space.users)
-  // @JoinTable({
-  //   name: 'user_space',
-  //   joinColumn: {
-  //     name: 'userIdx',
-  //     referencedColumnName: 'userIdx',
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'spaceIdx',
-  //     referencedColumnName: 'spaceIdx',
-  //   },
-  // })
-  // spaces: Space[];
+  @OneToMany(() => UserTeam, (userTeam) => userTeam.user)
+  teams: UserTeam[];
 
   @BeforeInsert()
   @BeforeUpdate()

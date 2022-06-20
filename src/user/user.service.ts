@@ -59,4 +59,7 @@ export class UserService {
   async findOneByIdx(userIdx: number): Promise<User> {
     return this.userRepository.selectUserByIdx(userIdx);
   }
+  async findAllByIdx(usersIdx: number[]): Promise<User[]> {
+    return this.userRepository.selectUsersByIdx(usersIdx);
+  }
 }
