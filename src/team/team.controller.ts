@@ -14,10 +14,11 @@ export class TeamController {
   @UseGuards(AuthGuard('jwt'))
   @Post()
   async postTeam(@User() user: any, @Body() createTeamData: CreateTeamWithMembersDto): Promise<object> {
-    console.log(user);
-    // const membersIdx = createTeamData.members;
-    // delete createTeamData.members;
-    const teamResult = await this.teamService.createTeam(<CreateTeamDto>createTeamData, createTeamData.members);
+    const teamResult = await this.teamService.createTeam(
+      user.userIdx,
+      <CreateTeamDto>createTeamData,
+      createTeamData.members,
+    );
 
     if (teamResult) {
       return response(baseResponse.SUCCESS, { teamIdx: teamResult.teamIdx });
