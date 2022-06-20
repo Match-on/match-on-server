@@ -66,8 +66,9 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   NOT_EXIST_UNIV: { "isSuccess": false, "code": 3004, "message": "등록되지 않은 대학교 이메일입니다." },
   NOT_EXIST_USER: { "isSuccess": false, "code": 3005, "message": "존재하지 않는 회원입니다." },
   WITHDRAWAL_USER: { "isSuccess": false, "code": 3006, "message": "탈퇴된 회원입니다." },
+  DEACTIVATED_USER: { "isSuccess": false, "code": 3007, "message": "비활성된 회원입니다." },
 
-  SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3007, "message": "비밀번호가 잘못 되었습니다." },
+  SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3008, "message": "비밀번호가 잘못 되었습니다." },
 
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
   // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
