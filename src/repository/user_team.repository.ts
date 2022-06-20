@@ -13,16 +13,28 @@ export class UserTeamRepository extends Repository<UserTeam> {
     const result = await this.save(member);
     return result;
   }
-  async insertMembers(team: Team, users: User[]): Promise<UserTeam[]> {
-    const promises = [];
+
+  async insertMembers(team: Team, users: User[], leader: User): Promise<UserTeam[]> {
+    const members = [];
+    if (!!leader) {
+      const member = new UserTeam();
+      member.name = leader.name;
+      member.user = leader;
+      member.team = team;
+      member.role = '팀장';
+      members.push(member);
+    }
+
     users.forEach((user) => {
       const member = new UserTeam();
       member.name = user.name;
       member.user = user;
       member.team = team;
-      promises.push(this.save(member));
+      member.status = 'W';
+      members.push(member);
     });
-    const result = await Promise.all(promises);
+
+    const result = await this.save(members);
     return result;
   }
 }

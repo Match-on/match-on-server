@@ -14,18 +14,15 @@ export class TeamService {
     private userService: UserService,
   ) {}
 
-  async createTeam(createTeamDto: CreateTeamDto, membersIdx: number[]): Promise<Team> {
-    // await Promise.all([
-    //   this.checkId(createTeamDto.id),
-    //   this.checkEmail(createTeamDto.email),
-    //   this.checkNickname(createTeamDto.nickname),
-    // ]);
+  async createTeam(userIdx: number, createTeamDto: CreateTeamDto, membersIdx: number[]): Promise<Team> {
     createTeamDto.id = Math.random().toString(36).substring(2, 11) + new Date().getTime().toString(36);
 
     const team = await this.teamRepository.insertTeam(createTeamDto);
-    const users = await this.userService.findAllByIdx(membersIdx);
+    const leader = await this.userService.findOneByIdx(userIdx);
+    const members = await this.userService.findAllByIdx(membersIdx);
 
-    await this.userTeamRepository.insertMembers(team, users);
+    await this.userTeamRepository.insertMembers(team, members, leader);
+    // TODO: 초대메일 로직 추가(메일 수락시 UserTeam.status 'W' => 'Y')
     return team;
   }
 }
