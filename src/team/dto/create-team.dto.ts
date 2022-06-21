@@ -1,4 +1,4 @@
-import { IsEmpty, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsEmpty, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateTeamDto {
   @IsEmpty()
@@ -7,4 +7,11 @@ export class CreateTeamDto {
   @IsNotEmpty()
   @MaxLength(20)
   readonly name: string;
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(20)
+  readonly type: string;
+  @IsDateString()
+  @IsOptional()
+  readonly deadline: Date;
 }
