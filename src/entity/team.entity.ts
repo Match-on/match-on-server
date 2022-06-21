@@ -20,6 +20,10 @@ export class Team {
   name: string;
   @Column({ type: 'varchar', length: 200, default: '' })
   description: string;
+  @Column({ type: 'varchar', length: 20 })
+  type: string;
+  @Column({ type: 'timestamp', nullable: true })
+  deadline: Date;
 
   @Column({ type: 'char', default: 'Y' })
   status: string;

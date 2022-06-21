@@ -25,4 +25,17 @@ export class TeamService {
     // TODO: 초대메일 로직 추가(메일 수락시 UserTeam.status 'W' => 'Y')
     return team;
   }
+
+  async readAllTeams(): Promise<Team[]> {
+    const teams = await this.teamRepository.find({ withDeleted: true });
+    return teams;
+  }
+
+  async readTeamsByUserIdx(userIdx: number): Promise<any[]> {
+    const teams = await this.teamRepository.findMyTeams(userIdx);
+    teams.forEach((team) => {
+      team.memberCount = parseInt(team.memberCount);
+    });
+    return teams;
+  }
 }

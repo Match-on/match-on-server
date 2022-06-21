@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
@@ -24,6 +24,23 @@ export class TeamController {
       return response(baseResponse.SUCCESS, { teamIdx: teamResult.teamIdx });
     } else {
       return errResponse(baseResponse.SERVER_ERROR);
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async getTeam(@User() user: any, @Query() query: any): Promise<object> {
+    const { userIdx } = query;
+    if (!userIdx && user.role == 'admin') {
+      // TODO: getAllTeam
+      const teamResult = await this.teamService.readAllTeams();
+      return response(baseResponse.SUCCESS, { teams: teamResult });
+    } else if (userIdx == user.userIdx) {
+      // TODO: get My Team
+      const teamResult = await this.teamService.readTeamsByUserIdx(userIdx);
+      return response(baseResponse.SUCCESS, { teams: teamResult });
+    } else {
+      return errResponse(baseResponse.ACCESS_DENIED);
     }
   }
 }
