@@ -6,7 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { UpdateResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 
 @Injectable()
 export class TeamService {
@@ -52,5 +52,10 @@ export class TeamService {
   async updateTeam(teamIdx: number, updateTeamData: UpdateTeamDto): Promise<UpdateResult> {
     const updateResult = await this.teamRepository.update(teamIdx, updateTeamData);
     return updateResult;
+  }
+
+  async deleteTeam(teamIdx: number): Promise<DeleteResult> {
+    const deleteResult = await this.teamRepository.softDelete({ teamIdx });
+    return deleteResult;
   }
 }
