@@ -30,4 +30,34 @@ export class TeamRepository extends Repository<Team> {
     //TODO: 즐겨찾기 표시 필요
     return teams;
   }
+
+  async findMembers(teamIdx: number): Promise<any[]> {
+    const members = this.createQueryBuilder('t')
+      .where({ teamIdx })
+      .leftJoin('t.members', 'm')
+      .leftJoin('m.user', 'u')
+      .select(['u.userIdx as userIdx', 'm.status as status'])
+      .getRawMany();
+    return members;
+  }
+
+  async findTeamWithMembers(teamIdx: number): Promise<any> {
+    const teams = this.createQueryBuilder('t')
+      .where({ teamIdx })
+      .leftJoinAndMapMany('t.members', 't.members', 'm')
+      .select([
+        't.teamIdx',
+        't.name',
+        't.createdAt',
+        't.deadline',
+        't.description',
+        't.id',
+        'm.memberIdx',
+        'm.name',
+        'm.role',
+        'm.status',
+      ])
+      .getOne();
+    return teams;
+  }
 }

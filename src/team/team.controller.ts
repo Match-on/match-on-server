@@ -30,7 +30,7 @@ export class TeamController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  async getTeam(@User() user: any, @Query() query: any): Promise<object> {
+  async getTeams(@User() user: any, @Query() query: any): Promise<object> {
     const { userIdx } = query;
     if (!userIdx && user.role == 'admin') {
       const teamResult = await this.teamService.readAllTeams();
@@ -38,6 +38,26 @@ export class TeamController {
     } else if (userIdx == user.userIdx) {
       const teamResult = await this.teamService.readTeamsByUserIdx(userIdx);
       return response(baseResponse.SUCCESS, { teams: teamResult });
+    } else {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx')
+  async getTeam(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query() query: any,
+  ): Promise<object> {
+    const { type } = query;
+    await this.teamService.checkTeamMember(teamIdx, user.userIdx);
+    if (type == 'profile') {
+      const teamResult = await this.teamService.readTeamProfile(teamIdx);
+      return response(baseResponse.SUCCESS, { team: teamResult });
+    } else if (type == 'main') {
+      // TODO: 팀 메인정보
+      return response(baseResponse.SUCCESS, {});
     } else {
       return errResponse(baseResponse.ACCESS_DENIED);
     }

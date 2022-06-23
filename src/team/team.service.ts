@@ -7,6 +7,8 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
+import { errResponse } from 'src/config/response';
+import { baseResponse } from 'src/config/baseResponseStatus';
 
 @Injectable()
 export class TeamService {
@@ -47,6 +49,20 @@ export class TeamService {
       .select('*')
       .getRawOne();
     return leader;
+  }
+  async checkTeamMember(teamIdx: number, userIdx: number): Promise<any> {
+    const members = await this.teamRepository.findMembers(teamIdx);
+
+    for (let i = 0; i < members.length; i++) {
+      if (members[i].userIdx == userIdx && members[i].status == 'Y') {
+        return true;
+      }
+    }
+    return errResponse(baseResponse.ACCESS_DENIED);
+  }
+  async readTeamProfile(teamIdx: number): Promise<any> {
+    const teamProfile = await this.teamRepository.findTeamWithMembers(teamIdx);
+    return teamProfile;
   }
 
   async updateTeam(teamIdx: number, updateTeamData: UpdateTeamDto): Promise<UpdateResult> {
