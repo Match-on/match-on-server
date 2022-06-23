@@ -5,6 +5,8 @@ import { TeamRepository } from 'src/repository/team.repository';
 import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
+import { UpdateTeamDto } from './dto/update-team.dto';
+import { UpdateResult } from 'typeorm';
 
 @Injectable()
 export class TeamService {
@@ -37,5 +39,18 @@ export class TeamService {
       team.memberCount = parseInt(team.memberCount);
     });
     return teams;
+  }
+  async readTeamLeader(teamIdx: number): Promise<any> {
+    const leader = await this.userTeamRepository
+      .createQueryBuilder()
+      .where({ team: { teamIdx }, role: '팀장' })
+      .select('*')
+      .getRawOne();
+    return leader;
+  }
+
+  async updateTeam(teamIdx: number, updateTeamData: UpdateTeamDto): Promise<UpdateResult> {
+    const updateResult = await this.teamRepository.update(teamIdx, updateTeamData);
+    return updateResult;
   }
 }
