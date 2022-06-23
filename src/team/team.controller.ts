@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Param, Query, ParseIntPipe, UseGuards, Delete } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
@@ -54,9 +54,24 @@ export class TeamController {
     if (!leader || leader.userUserIdx != user.userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     } else {
-      //update team
       const updateResult = await this.teamService.updateTeam(teamIdx, updateTeamData);
       if (updateResult.affected == 1) {
+        return response(baseResponse.SUCCESS, { teamIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:teamIdx')
+  async deleteTeam(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    const leader = await this.teamService.readTeamLeader(teamIdx);
+    if (!leader || leader.userUserIdx != user.userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const deleteResult = await this.teamService.deleteTeam(teamIdx);
+      if (deleteResult.affected == 1) {
         return response(baseResponse.SUCCESS, { teamIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);
