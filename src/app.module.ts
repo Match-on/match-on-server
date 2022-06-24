@@ -32,6 +32,7 @@ import { TeamModule } from './team/team.module';
       database: process.env.DB_NAME,
       entities: ['dist/**/*.entity.{ts,js}'],
       synchronize: process.env.DB_SYNC === 'true',
+      logging: true,
     }),
     UserModule,
     AuthModule,

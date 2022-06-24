@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
@@ -93,6 +94,22 @@ export class TeamController {
       const deleteResult = await this.teamService.deleteTeam(teamIdx);
       if (deleteResult.affected == 1) {
         return response(baseResponse.SUCCESS, { teamIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/members')
+  async postMember(@User() user: any, @Body() createMemberData: CreateMemeberDto): Promise<object> {
+    const leader = await this.teamService.readTeamLeader(createMemberData.teamIdx);
+    if (!leader || leader.userUserIdx != user.userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const memberResult = await this.teamService.createMember(createMemberData.teamIdx, createMemberData.userIdx);
+      if (memberResult.raw.affectedRows == 1) {
+        return response(baseResponse.SUCCESS, { memberIdx: memberResult.identifiers[0].memberIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);
       }
