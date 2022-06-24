@@ -6,7 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { DeleteResult, UpdateResult } from 'typeorm';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
 
@@ -73,5 +73,12 @@ export class TeamService {
   async deleteTeam(teamIdx: number): Promise<DeleteResult> {
     const deleteResult = await this.teamRepository.softDelete({ teamIdx });
     return deleteResult;
+  }
+
+  async createMember(teamIdx: number, userIdx: number): Promise<InsertResult> {
+    const user = await this.userService.findOneByIdx(userIdx);
+    const result = await this.userTeamRepository.insertMember({ teamIdx }, user);
+    //TODO: 초대 메일 로직
+    return result;
   }
 }
