@@ -87,7 +87,7 @@ export class TeamService {
     const result = await this.userTeamRepository
       .createQueryBuilder()
       .where({ memberIdx })
-      .select(['userUserIdx as userIdx', 'status', 'deletedAt'])
+      .select(['userUserIdx as userIdx', 'teamTeamIdx as teamIdx', 'status', 'deletedAt'])
       .getRawOne();
     return result;
   }
@@ -96,5 +96,10 @@ export class TeamService {
     const updateResult = await this.userTeamRepository.update(memberIdx, updateMemberData);
     //TODO: 메모 추가
     return updateResult;
+  }
+
+  async deleteMember(memberIdx: number): Promise<DeleteResult> {
+    const deleteResult = await this.userTeamRepository.softDelete({ memberIdx });
+    return deleteResult;
   }
 }

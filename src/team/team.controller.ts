@@ -109,7 +109,7 @@ export class TeamController {
       return errResponse(baseResponse.ACCESS_DENIED);
     } else {
       const memberResult = await this.teamService.createMember(createMemberData.teamIdx, createMemberData.userIdx);
-      if (memberResult.raw.affectedRows == 1) {
+      if (memberResult.raw.affectedRows >= 1) {
         return response(baseResponse.SUCCESS, { memberIdx: memberResult.identifiers[0].memberIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);
@@ -129,6 +129,25 @@ export class TeamController {
     } else {
       const updateResult = await this.teamService.updateMember(memberIdx, updateMemberData);
       if (updateResult.affected == 1) {
+        return response(baseResponse.SUCCESS, { memberIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('members/:memberIdx')
+  async deleteMember(@User() user: any, @Param('memberIdx', ParseIntPipe) memberIdx: number): Promise<object> {
+    const member = await this.teamService.readMemberByIdx(memberIdx);
+    if (!member) return errResponse(baseResponse.NOT_EXIST_MEMBER);
+
+    const leader = await this.teamService.readTeamLeader(member.teamIdx);
+    if (member.userIdx != user.userIdx && (!leader || leader.userUserIdx != user.userIdx)) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const deleteResult = await this.teamService.deleteMember(memberIdx);
+      if (deleteResult.affected == 1) {
         return response(baseResponse.SUCCESS, { memberIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);

@@ -70,6 +70,8 @@ export const baseResponse: {[k:string]:BaseResponse} = {
 
   SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3008, "message": "비밀번호가 잘못 되었습니다." },
 
+  NOT_EXIST_MEMBER: { "isSuccess": false, "code": 3009, "message": "존재하지 않는 멤버입니다." },
+
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
   // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
   // SIGNIN_WITHDRAWAL_ACCOUNT: { "isSuccess": false, "code": 3008, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },

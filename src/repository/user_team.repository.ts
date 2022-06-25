@@ -12,6 +12,7 @@ export class UserTeamRepository extends Repository<UserTeam> {
     member.user = user;
     member.team = team;
     member.status = 'W';
+    member.deletedAt = null;
 
     const result = await this.upsert(member, ['user', 'team']);
     return result;
