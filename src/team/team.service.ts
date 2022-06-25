@@ -9,6 +9,7 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
+import { UpdateMemeberDto } from './dto/update-member.dto';
 
 @Injectable()
 export class TeamService {
@@ -80,5 +81,20 @@ export class TeamService {
     const result = await this.userTeamRepository.insertMember({ teamIdx }, user);
     //TODO: 초대 메일 로직
     return result;
+  }
+
+  async readMemberByIdx(memberIdx: number): Promise<any> {
+    const result = await this.userTeamRepository
+      .createQueryBuilder()
+      .where({ memberIdx })
+      .select(['userUserIdx as userIdx', 'status', 'deletedAt'])
+      .getRawOne();
+    return result;
+  }
+
+  async updateMember(memberIdx: number, updateMemberData: UpdateMemeberDto): Promise<UpdateResult> {
+    const updateResult = await this.userTeamRepository.update(memberIdx, updateMemberData);
+    //TODO: 메모 추가
+    return updateResult;
   }
 }

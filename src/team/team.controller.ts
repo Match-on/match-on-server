@@ -6,6 +6,7 @@ import { User } from 'src/user.decorator';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamService } from './team.service';
 
@@ -110,6 +111,25 @@ export class TeamController {
       const memberResult = await this.teamService.createMember(createMemberData.teamIdx, createMemberData.userIdx);
       if (memberResult.raw.affectedRows == 1) {
         return response(baseResponse.SUCCESS, { memberIdx: memberResult.identifiers[0].memberIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('members/:memberIdx')
+  async patchMember(
+    @User() user: any,
+    @Param('memberIdx', ParseIntPipe) memberIdx: number,
+    @Body() updateMemberData: UpdateMemeberDto,
+  ): Promise<object> {
+    const member = await this.teamService.readMemberByIdx(memberIdx);
+    if (member.userIdx != user.userIdx || member.status != 'Y' || !!member.deletedAt) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const updateResult = await this.teamService.updateMember(memberIdx, updateMemberData);
+      if (updateResult.affected == 1) {
+        return response(baseResponse.SUCCESS, { memberIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);
       }
