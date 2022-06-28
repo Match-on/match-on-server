@@ -26,20 +26,18 @@ export class UserController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:userIdx')
-  async getuser(@User() user: any, @Param('userIdx', ParseIntPipe) userIdx: number) {
+  async getUser(@User() user: any, @Param('userIdx', ParseIntPipe) userIdx: number) {
     if (user.userIdx !== userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
 
     const userResult = await this.userService.findOneByIdx(userIdx);
+    const { countryCode, birth, status, enrolledAt, updatedAt, deletedAt, ...result } = userResult;
 
-    // TODO: 불필요한 코드
     if (!userResult) {
-      return errResponse(baseResponse.NOT_EXIST_USER);
-    } else if (!!userResult.deletedAt) {
-      return errResponse(baseResponse.WITHDRAWAL_USER);
+      return errResponse(baseResponse.SERVER_ERROR);
     } else {
-      return response(baseResponse.SUCCESS, userResult);
+      return response(baseResponse.SUCCESS, result);
     }
   }
 
