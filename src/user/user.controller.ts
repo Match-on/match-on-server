@@ -33,6 +33,7 @@ export class UserController {
 
     const userResult = await this.userService.findOneByIdx(userIdx);
 
+    // TODO: 불필요한 코드
     if (!userResult) {
       return errResponse(baseResponse.NOT_EXIST_USER);
     } else if (!!userResult.deletedAt) {

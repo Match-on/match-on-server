@@ -11,11 +11,7 @@ export class UserRepository extends Repository<User> {
   }
 
   async selectUserById(id: string): Promise<User> {
-    const user = await this.createQueryBuilder()
-      .where('id = :id', { id: id })
-      .withDeleted()
-      .select('user.*')
-      .getRawOne();
+    const user = await this.createQueryBuilder().where('id = :id', { id: id }).withDeleted().select('*').getRawOne();
     return user;
   }
 
