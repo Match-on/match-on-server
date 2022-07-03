@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserTeam } from './user_team.entity';
+import { Member } from './member.entity';
 
 @Entity()
 export class Team {
@@ -34,6 +34,6 @@ export class Team {
   @DeleteDateColumn({ type: 'timestamp' })
   deletedAt: Date | null;
 
-  @OneToMany(() => UserTeam, (member) => member.team)
-  members: UserTeam[];
+  @OneToMany(() => Member, (member) => member.team)
+  members: Member[];
 }

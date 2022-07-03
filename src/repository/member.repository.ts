@@ -1,12 +1,12 @@
 import { Team } from 'src/entity/team.entity';
 import { User } from 'src/entity/user.entity';
-import { UserTeam } from 'src/entity/user_team.entity';
+import { Member } from 'src/entity/member.entity';
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 
-@EntityRepository(UserTeam)
-export class UserTeamRepository extends Repository<UserTeam> {
+@EntityRepository(Member)
+export class MemberRepository extends Repository<Member> {
   async insertMember(team: any, user: User): Promise<InsertResult> {
-    const member = new UserTeam();
+    const member = new Member();
     member.memberIdx = null;
     member.name = user.name;
     member.user = user;
@@ -18,10 +18,10 @@ export class UserTeamRepository extends Repository<UserTeam> {
     return result;
   }
 
-  async insertMembers(team: Team, users: User[], leader: User): Promise<UserTeam[]> {
+  async insertMembers(team: Team, users: User[], leader: User): Promise<Member[]> {
     const members = [];
     if (!!leader) {
-      const member = new UserTeam();
+      const member = new Member();
       member.name = leader.name;
       member.user = leader;
       member.team = team;
@@ -30,7 +30,7 @@ export class UserTeamRepository extends Repository<UserTeam> {
     }
 
     users.forEach((user) => {
-      const member = new UserTeam();
+      const member = new Member();
       member.name = user.name;
       member.user = user;
       member.team = team;

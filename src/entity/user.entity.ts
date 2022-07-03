@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
-import { UserTeam } from './user_team.entity';
+import { Member } from './member.entity';
 
 @Entity()
 export class User {
@@ -52,8 +52,8 @@ export class User {
   @DeleteDateColumn({ type: 'timestamp' })
   deletedAt: Date | null;
 
-  @OneToMany(() => UserTeam, (userTeam) => userTeam.user)
-  teams: UserTeam[];
+  @OneToMany(() => Member, (userTeam) => userTeam.user)
+  teams: Member[];
 
   @BeforeInsert()
   @BeforeUpdate()

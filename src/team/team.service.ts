@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserTeamRepository } from 'src/repository/user_team.repository';
+import { MemberRepository } from 'src/repository/member.repository';
 import { TeamRepository } from 'src/repository/team.repository';
 import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -15,7 +15,7 @@ import { UpdateMemeberDto } from './dto/update-member.dto';
 export class TeamService {
   constructor(
     @InjectRepository(TeamRepository) private teamRepository: TeamRepository,
-    @InjectRepository(UserTeamRepository) private userTeamRepository: UserTeamRepository,
+    @InjectRepository(MemberRepository) private memberRepository: MemberRepository,
     private userService: UserService,
   ) {}
 
@@ -26,7 +26,7 @@ export class TeamService {
     const leader = await this.userService.findOneByIdx(userIdx);
     const members = await this.userService.findAllByIdx(membersIdx);
 
-    await this.userTeamRepository.insertMembers(team, members, leader);
+    await this.memberRepository.insertMembers(team, members, leader);
     // TODO: 초대메일 로직 추가(메일 수락시 UserTeam.status 'W' => 'Y')
     return team;
   }
@@ -44,7 +44,7 @@ export class TeamService {
     return teams;
   }
   async readTeamLeader(teamIdx: number): Promise<any> {
-    const leader = await this.userTeamRepository
+    const leader = await this.memberRepository
       .createQueryBuilder()
       .where({ team: { teamIdx }, role: '팀장' })
       .select('*')
@@ -78,13 +78,13 @@ export class TeamService {
 
   async createMember(teamIdx: number, userIdx: number): Promise<InsertResult> {
     const user = await this.userService.findOneByIdx(userIdx);
-    const result = await this.userTeamRepository.insertMember({ teamIdx }, user);
+    const result = await this.memberRepository.insertMember({ teamIdx }, user);
     //TODO: 초대 메일 로직
     return result;
   }
 
   async readMemberByIdx(memberIdx: number): Promise<any> {
-    const result = await this.userTeamRepository
+    const result = await this.memberRepository
       .createQueryBuilder()
       .where({ memberIdx })
       .select(['userUserIdx as userIdx', 'teamTeamIdx as teamIdx', 'status', 'deletedAt'])
@@ -93,13 +93,13 @@ export class TeamService {
   }
 
   async updateMember(memberIdx: number, updateMemberData: UpdateMemeberDto): Promise<UpdateResult> {
-    const updateResult = await this.userTeamRepository.update(memberIdx, updateMemberData);
+    const updateResult = await this.memberRepository.update(memberIdx, updateMemberData);
     //TODO: 메모 추가
     return updateResult;
   }
 
   async deleteMember(memberIdx: number): Promise<DeleteResult> {
-    const deleteResult = await this.userTeamRepository.softDelete({ memberIdx });
+    const deleteResult = await this.memberRepository.softDelete({ memberIdx });
     return deleteResult;
   }
 }
