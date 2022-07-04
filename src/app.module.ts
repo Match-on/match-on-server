@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
 import { TeamModule } from './team/team.module';
+import { UnivModule } from './univ/univ.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { TeamModule } from './team/team.module';
     UserModule,
     AuthModule,
     TeamModule,
+    UnivModule,
   ],
   controllers: [AppController],
   providers: [AppService],
