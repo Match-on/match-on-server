@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Member } from './member.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Team {
@@ -36,4 +38,7 @@ export class Team {
 
   @OneToMany(() => Member, (member) => member.team)
   members: Member[];
+
+  @ManyToMany(() => User, (user) => user.favorites)
+  favorites: User[];
 }

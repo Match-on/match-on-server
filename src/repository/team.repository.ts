@@ -17,6 +17,7 @@ export class TeamRepository extends Repository<Team> {
       .leftJoin('t.members', 'm')
       .andWhere(`m.status = 'Y'`)
       .groupBy('t.teamIdx')
+      .leftJoin('t.favorites', 'f')
       .select([
         't.teamIdx as teamIdx',
         't.name as name',
@@ -24,10 +25,10 @@ export class TeamRepository extends Repository<Team> {
         't.type as type',
         't.deadline as deadline',
         't.createdAt as createdAt',
+        'if(f.userIdx is null, false, true) as favorite',
       ])
       .addSelect('COUNT(m.user)', 'memberCount')
       .getRawMany();
-    //TODO: 즐겨찾기 표시 필요
     return teams;
   }
 

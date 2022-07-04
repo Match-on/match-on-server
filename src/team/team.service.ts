@@ -31,6 +31,11 @@ export class TeamService {
     return team;
   }
 
+  async readTeam(teamIdx: number): Promise<Team> {
+    const team = await this.teamRepository.findOne({ teamIdx });
+    return team;
+  }
+
   async readAllTeams(): Promise<Team[]> {
     const teams = await this.teamRepository.find({ withDeleted: true });
     return teams;
@@ -101,5 +106,14 @@ export class TeamService {
   async deleteMember(memberIdx: number): Promise<DeleteResult> {
     const deleteResult = await this.memberRepository.softDelete({ memberIdx });
     return deleteResult;
+  }
+
+  async createFavorite(userIdx: number, teamIdx: number): Promise<void> {
+    await this.deleteFavorite(userIdx, teamIdx);
+    await this.teamRepository.createQueryBuilder('t').relation('favorites').of({ teamIdx }).add({ userIdx });
+  }
+
+  async deleteFavorite(userIdx: number, teamIdx: number): Promise<void> {
+    await this.teamRepository.createQueryBuilder('t').relation('favorites').of({ teamIdx }).remove({ userIdx });
   }
 }

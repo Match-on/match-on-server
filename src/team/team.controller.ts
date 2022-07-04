@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -117,7 +118,7 @@ export class TeamController {
     }
   }
   @UseGuards(AuthGuard('jwt'))
-  @Patch('members/:memberIdx')
+  @Patch('/members/:memberIdx')
   async patchMember(
     @User() user: any,
     @Param('memberIdx', ParseIntPipe) memberIdx: number,
@@ -137,7 +138,7 @@ export class TeamController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Delete('members/:memberIdx')
+  @Delete('/members/:memberIdx')
   async deleteMember(@User() user: any, @Param('memberIdx', ParseIntPipe) memberIdx: number): Promise<object> {
     const member = await this.teamService.readMemberByIdx(memberIdx);
     if (!member) return errResponse(baseResponse.NOT_EXIST_MEMBER);
@@ -153,5 +154,30 @@ export class TeamController {
         return errResponse(baseResponse.DB_ERROR);
       }
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/favorites')
+  async postFavorite(@User() user: any, @Body() createFavoriteData: CreateFavoriteDto): Promise<object> {
+    const teamIdx = createFavoriteData.teamIdx;
+
+    const teamResult = await this.teamService.readTeam(teamIdx);
+    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_TEAM);
+    }
+
+    await this.teamService.createFavorite(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/favorites/:teamIdx')
+  async deleteFavorite(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    const teamResult = await this.teamService.readTeam(teamIdx);
+    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_TEAM);
+    }
+
+    await this.teamService.deleteFavorite(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS);
   }
 }

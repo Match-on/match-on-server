@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -12,6 +14,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Member } from './member.entity';
+import { Team } from './team.entity';
 
 @Entity()
 export class User {
@@ -54,6 +57,10 @@ export class User {
 
   @OneToMany(() => Member, (userTeam) => userTeam.user)
   teams: Member[];
+
+  @ManyToMany(() => Team, (team) => team.favorites)
+  @JoinTable({ name: 'favorite_team' })
+  favorites: Team[];
 
   @BeforeInsert()
   @BeforeUpdate()
