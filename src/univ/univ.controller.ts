@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
@@ -27,8 +27,14 @@ export class UnivController {
   }
 
   @Get()
-  async getUnivs(@User() user: any) {
-    const univResult = await this.univService.findAll();
+  async getUnivs(@User() user: any, @Query('keyword') keyword?: string) {
+    let univResult;
+    if (!keyword) {
+      univResult = await this.univService.findAll();
+    } else {
+      univResult = await this.univService.findByName(keyword);
+    }
+
     if (univResult) {
       return response(baseResponse.SUCCESS, univResult);
     } else {

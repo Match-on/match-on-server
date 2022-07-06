@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cache } from 'cache-manager';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse } from 'src/config/response';
 import { User } from 'src/entity/user.entity';
@@ -10,7 +11,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(UserRepository) private userRepository: UserRepository) {}
+  constructor(
+    @InjectRepository(UserRepository) private userRepository: UserRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
+
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     await Promise.all([
       this.checkId(createUserDto.id),
@@ -61,5 +66,19 @@ export class UserService {
   }
   async findAllByIdx(usersIdx: number[]): Promise<User[]> {
     return this.userRepository.selectUsersByIdx(usersIdx);
+  }
+
+  async generateCode(email: string): Promise<string> {
+    const code = String(Math.floor(Math.random() * 10 ** 6)).padStart(6, '0');
+    await this.cacheManager.set(email, code, { ttl: 300 });
+    return code;
+  }
+  async verifyCode(email: string, code: string): Promise<boolean> {
+    console.log(await this.cacheManager.get(email), code);
+
+    for (const key of await this.cacheManager.store.keys()) {
+      console.log(key + ' : ' + (await this.cacheManager.get(key)));
+    }
+    return (await this.cacheManager.get(email)) === code;
   }
 }

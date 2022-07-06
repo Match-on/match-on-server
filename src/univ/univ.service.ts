@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Univ } from 'src/entity/univ.entity';
 import { UnivRepository } from 'src/repository/univ.repository';
-import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
+import { DeleteResult, InsertResult, Like, UpdateResult } from 'typeorm';
 import { CreateUnivDto } from './dto/create-univ.dto';
 import { UpdateUnivDto } from './dto/update-univ.dto';
 
@@ -29,5 +29,12 @@ export class UnivService {
   }
   async findAll(): Promise<Univ[]> {
     return this.univRepository.find();
+  }
+  async findByName(keyword: string): Promise<Univ[]> {
+    return this.univRepository.find({
+      select: ['univIdx', 'name', 'domain'],
+      where: { name: Like(`%${keyword}%`), status: 'Y' },
+      order: { name: 'ASC' },
+    });
   }
 }
