@@ -74,11 +74,6 @@ export class UserService {
     return code;
   }
   async verifyCode(email: string, code: string): Promise<boolean> {
-    console.log(await this.cacheManager.get(email), code);
-
-    for (const key of await this.cacheManager.store.keys()) {
-      console.log(key + ' : ' + (await this.cacheManager.get(key)));
-    }
     return (await this.cacheManager.get(email)) === code;
   }
 }

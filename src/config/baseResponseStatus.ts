@@ -59,6 +59,9 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   USER_EMAILAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2036, "message": "이메일 수신동의 여부 형식을 정확하게 입력해주세요." },
   USER_SMSAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2037, "message": "문자 수신동의 여부 형식을 정확하게 입력해주세요." },
 
+
+  SEARCH_KEYWORD_EMPTY: { "isSuccess": false, "code": 2100, "message": "검색어가 없습니다." },
+  
   // Response error
   REDUNDANT_EMAIL: { "isSuccess": false, "code": 3001, "message": "중복된 이메일입니다." },
   REDUNDANT_ID: { "isSuccess": false, "code": 3002, "message": "중복된 아이디입니다." },

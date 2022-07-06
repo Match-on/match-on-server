@@ -9,11 +9,11 @@ import { UpdateUnivDto } from './dto/update-univ.dto';
 import { UnivService } from './univ.service';
 
 //TODO: 권한체크
-@UseGuards(AuthGuard('jwt'))
 @Controller('univs')
 export class UnivController {
   constructor(private readonly univService: UnivService, private jwtService: JwtService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async postUniv(@Body() createUnivData: CreateUnivDto): Promise<object> {
     const univResult = await this.univService.createUniv(createUnivData);
@@ -26,14 +26,10 @@ export class UnivController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async getUnivs(@User() user: any, @Query('keyword') keyword?: string) {
-    let univResult;
-    if (!keyword) {
-      univResult = await this.univService.findAll();
-    } else {
-      univResult = await this.univService.findByName(keyword);
-    }
+  async getUnivs(@User() user: any) {
+    const univResult = await this.univService.findAll();
 
     if (univResult) {
       return response(baseResponse.SUCCESS, univResult);
@@ -42,6 +38,21 @@ export class UnivController {
     }
   }
 
+  @Get('/search')
+  async getUnivsSearch(@User() user: any, @Query('keyword') keyword: string) {
+    if (!keyword || keyword.length == 0) {
+      return errResponse(baseResponse.SEARCH_KEYWORD_EMPTY);
+    }
+    const univResult = await this.univService.findByName(keyword);
+
+    if (univResult) {
+      return response(baseResponse.SUCCESS, univResult);
+    } else {
+      return errResponse(baseResponse.SERVER_ERROR);
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('/:univIdx')
   async getUniv(@User() univ: any, @Param('univIdx', ParseIntPipe) univIdx: number) {
     const univResult = await this.univService.findOneByIdx(univIdx);
@@ -53,6 +64,7 @@ export class UnivController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/:univIdx')
   async patchUniv(
     @User() univ: any,
@@ -70,6 +82,7 @@ export class UnivController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete('/:univIdx')
   async deleteUniv(@User() univ: any, @Param('univIdx', ParseIntPipe) univIdx: number) {
     const deleteResult = await this.univService.deleteUniv(univIdx);
