@@ -5,7 +5,7 @@ interface BaseResponse {
   code: number;
   message: string;
 }
-const response = ({ isSuccess, code, message }: BaseResponse, result: object | null) => {
+const response = ({ isSuccess, code, message }: BaseResponse, result?: object | null) => {
   return {
     isSuccess: isSuccess,
     code: code,

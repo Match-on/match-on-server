@@ -59,17 +59,25 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   USER_EMAILAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2036, "message": "이메일 수신동의 여부 형식을 정확하게 입력해주세요." },
   USER_SMSAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2037, "message": "문자 수신동의 여부 형식을 정확하게 입력해주세요." },
 
+
+  SEARCH_KEYWORD_EMPTY: { "isSuccess": false, "code": 2100, "message": "검색어가 없습니다." },
+  
   // Response error
   REDUNDANT_EMAIL: { "isSuccess": false, "code": 3001, "message": "중복된 이메일입니다." },
   REDUNDANT_ID: { "isSuccess": false, "code": 3002, "message": "중복된 아이디입니다." },
   REDUNDANT_NICKNAME: { "isSuccess": false, "code": 3003, "message": "중복된 닉네임입니다." },
-  NOT_EXIST_UNIV: { "isSuccess": false, "code": 3004, "message": "등록되지 않은 대학교 이메일입니다." },
+  NOT_EXIST_UNIV: { "isSuccess": false, "code": 3004, "message": "존재하지 않는 학교입니다." },
   NOT_EXIST_USER: { "isSuccess": false, "code": 3005, "message": "존재하지 않는 회원입니다." },
   WITHDRAWAL_USER: { "isSuccess": false, "code": 3006, "message": "탈퇴된 회원입니다." },
   DEACTIVATED_USER: { "isSuccess": false, "code": 3007, "message": "비활성된 회원입니다." },
 
   SIGNIN_PASSWORD_WRONG: { "isSuccess": false, "code": 3008, "message": "비밀번호가 잘못 되었습니다." },
 
+  NOT_EXIST_MEMBER: { "isSuccess": false, "code": 3009, "message": "존재하지 않는 멤버입니다." },
+
+  NOT_EXIST_TEAM: { "isSuccess": false, "code": 3010, "message": "존재하지 않는 팀입니다." },
+
+  CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
   // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
   // SIGNIN_WITHDRAWAL_ACCOUNT: { "isSuccess": false, "code": 3008, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },

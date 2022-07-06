@@ -3,9 +3,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamService } from './team.service';
 
@@ -108,11 +110,74 @@ export class TeamController {
       return errResponse(baseResponse.ACCESS_DENIED);
     } else {
       const memberResult = await this.teamService.createMember(createMemberData.teamIdx, createMemberData.userIdx);
-      if (memberResult.raw.affectedRows == 1) {
+      if (memberResult.raw.affectedRows >= 1) {
         return response(baseResponse.SUCCESS, { memberIdx: memberResult.identifiers[0].memberIdx });
       } else {
         return errResponse(baseResponse.DB_ERROR);
       }
     }
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/members/:memberIdx')
+  async patchMember(
+    @User() user: any,
+    @Param('memberIdx', ParseIntPipe) memberIdx: number,
+    @Body() updateMemberData: UpdateMemeberDto,
+  ): Promise<object> {
+    const member = await this.teamService.readMemberByIdx(memberIdx);
+    if (member.userIdx != user.userIdx || member.status != 'Y' || !!member.deletedAt) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const updateResult = await this.teamService.updateMember(memberIdx, updateMemberData);
+      if (updateResult.affected == 1) {
+        return response(baseResponse.SUCCESS, { memberIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/members/:memberIdx')
+  async deleteMember(@User() user: any, @Param('memberIdx', ParseIntPipe) memberIdx: number): Promise<object> {
+    const member = await this.teamService.readMemberByIdx(memberIdx);
+    if (!member) return errResponse(baseResponse.NOT_EXIST_MEMBER);
+
+    const leader = await this.teamService.readTeamLeader(member.teamIdx);
+    if (member.userIdx != user.userIdx && (!leader || leader.userUserIdx != user.userIdx)) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    } else {
+      const deleteResult = await this.teamService.deleteMember(memberIdx);
+      if (deleteResult.affected == 1) {
+        return response(baseResponse.SUCCESS, { memberIdx });
+      } else {
+        return errResponse(baseResponse.DB_ERROR);
+      }
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/favorites')
+  async postFavorite(@User() user: any, @Body() createFavoriteData: CreateFavoriteDto): Promise<object> {
+    const teamIdx = createFavoriteData.teamIdx;
+
+    const teamResult = await this.teamService.readTeam(teamIdx);
+    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_TEAM);
+    }
+
+    await this.teamService.createFavorite(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/favorites/:teamIdx')
+  async deleteFavorite(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    const teamResult = await this.teamService.readTeam(teamIdx);
+    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_TEAM);
+    }
+
+    await this.teamService.deleteFavorite(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS);
   }
 }

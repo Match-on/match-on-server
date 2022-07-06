@@ -13,7 +13,7 @@ import { User } from './user.entity';
 
 @Entity()
 @Unique(['user', 'team'])
-export class UserTeam {
+export class Member {
   @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
   memberIdx: number;
   @ManyToOne(() => User, (user) => user.teams, { createForeignKeyConstraints: false })
