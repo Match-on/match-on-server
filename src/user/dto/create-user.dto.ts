@@ -11,6 +11,9 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
+  @IsNumber()
+  @IsNotEmpty()
+  readonly univIdx: number;
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
