@@ -16,50 +16,7 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   TOKEN_VERIFICATION_SUCCESS: { "isSuccess": true, "code": 1001, "message": "JWT 토큰 검증 성공" }, // ?
 
   //Request error
-  SIGNUP_EMAIL_EMPTY: { "isSuccess": false, "code": 2001, "message": "이메일을 입력해주세요." },
-  SIGNUP_EMAIL_LENGTH: { "isSuccess": false, "code": 2002, "message": "이메일은 100자리 미만으로 입력해주세요." },
-  SIGNUP_EMAIL_ERROR_TYPE: { "isSuccess": false, "code": 2003, "message": "이메일 형식을 정확하게 입력해주세요." },
-  SIGNUP_PASSWORD_EMPTY: { "isSuccess": false, "code": 2004, "message": "비밀번호를 입력해주세요." },
-  SIGNUP_PASSWORD_LENGTH: { "isSuccess": false, "code": 2005, "message": "비밀번호는 8자리 이상 20자리 이하로 입력해주세요." },
-  SIGNUP_PASSWORD_ERROR_TYPE: { "isSuccess": false, "code": 2006, "message": "비밀번호 형식을 정확하게 입력해주세요." },
-  SIGNUP_NICKNAME_EMPTY: { "isSuccess": false, "code": 2007, "message": "닉네임을 입력 해주세요." },
-  SIGNUP_NICKNAME_LENGTH: { "isSuccess": false, "code": 2008, "message": "닉네임은 2-10자리를 입력해주세요." },
-  SIGNUP_PHONE_EMPTY: { "isSuccess": false, "code": 2009, "message": "전화번호를 입력 해주세요." },
-  SIGNUP_PHONE_ERROR_TYPE: { "isSuccess": false, "code": 2010, "message": "전화번호 형식을 정확하게 입력해주세요." },
-  SIGNUP_BIRTH_EMPTY: { "isSuccess": false, "code": 2011, "message": "생일을 입력 해주세요." },
-  SIGNUP_DATE_ERROR_TYPE: { "isSuccess": false, "code": 2012, "message": "날짜 형식을 정확하게 입력해주세요." },
-
-  SIGNIN_EMAIL_EMPTY: { "isSuccess": false, "code": 2013, "message": "이메일을 입력해주세요" },
-  SIGNIN_EMAIL_LENGTH: { "isSuccess": false, "code": 2014, "message": "이메일은 30자리 미만으로 입력해주세요." },
-  SIGNIN_EMAIL_ERROR_TYPE: { "isSuccess": false, "code": 2015, "message": "이메일을 형식을 정확하게 입력해주세요." },
-  SIGNIN_PASSWORD_EMPTY: { "isSuccess": false, "code": 2016, "message": "비밀번호를 입력 해주세요." },
-
-  USER_USERIDX_EMPTY: { "isSuccess": false, "code": 2017, "message": "유저 인덱스를 입력해주세요." },
-  USER_SHOPIDX_EMPTY: { "isSuccess": false, "code": 2018, "message": "가게 인덱스를 입력해주세요." },
-  USER_LIKEIDX_EMPTY: { "isSuccess": false, "code": 2019, "message": "찜 인덱스를 입력해주세요." },
-  USER_ORDERIDX_EMPTY: { "isSuccess": false, "code": 2020, "message": "주문 인덱스를 입력해주세요." },
-
-  USER_USEREMAIL_EMPTY: { "isSuccess": false, "code": 2021, "message": "이메일을 입력해주세요." },
-  USER_USERIDX_NOT_MATCH: { "isSuccess": false, "code": 2022, "message": "유저 인덱스를 확인해주세요" },
-  USER_NICKNAME_EMPTY: { "isSuccess": false, "code": 2023, "message": "변경할 닉네임 값을 입력해주세요" },
-  USER_STATUS_EMPTY: { "isSuccess": false, "code": 2024, "message": "회원 상태값을 입력해주세요" },
-  USER_CURRENTPASSWORD_EMPTY: { "isSuccess": false, "code": 2025, "message": "현재 비밀번호를 입력해주세요" },
-  USER_NEWPASSWORD_EMPTY: { "isSuccess": false, "code": 2026, "message": "새로운 비밀번호를 입력해주세요" },
-  USER_PHONE_EMPTY: { "isSuccess": false, "code": 2027, "message": "전화번호를 입력해주세요" },
-  USER_PROFILEIMAGEURL_EMPTY: { "isSuccess": false, "code": 2028, "message": "프로필사진URL을 입력해주세요" },
-  USER_EMAILAGREE_EMPTY: { "isSuccess": false, "code": 2029, "message": "이메일 수신동의 여부를 입력해주세요" },
-  USER_SMSAGREE_EMPTY: { "isSuccess": false, "code": 2030, "message": "문자 수신동의 여부를 입력해주세요" },
-
-  USER_PASSWORD_LENGTH: { "isSuccess": false, "code": 2031, "message": "비밀번호는 8자리 이상 20자리 이하로 입력해주세요." },
-  USER_NICKNAME_LENGTH: { "isSuccess": false, "code": 2032, "message": "닉네임은 2-10자리를 입력해주세요." },
-
-  USER_PASSWORD_ERROR_TYPE: { "isSuccess": false, "code": 2033, "message": "비밀번호 형식을 정확하게 입력해주세요." },
-  USER_PHONE_ERROR_TYPE: { "isSuccess": false, "code": 2034, "message": "전화번호 형식을 정확하게 입력해주세요." },
-  USER_PROFILEIMAGEURL_ERROR_TYPE: { "isSuccess": false, "code": 2035, "message": "프로필사진URL 형식을 정확하게 입력해주세요." },
-  USER_EMAILAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2036, "message": "이메일 수신동의 여부 형식을 정확하게 입력해주세요." },
-  USER_SMSAGREE_ERROR_TYPE: { "isSuccess": false, "code": 2037, "message": "문자 수신동의 여부 형식을 정확하게 입력해주세요." },
-
-
+  CHECK_PARAM_EMPTY: { "isSuccess": false, "code": 2001, "message": "검사 파라미터가 없습니다." },
   SEARCH_KEYWORD_EMPTY: { "isSuccess": false, "code": 2100, "message": "검색어가 없습니다." },
   
   // Response error

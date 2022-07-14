@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
@@ -55,6 +55,21 @@ export class UserController {
     } else {
       return errResponse(baseResponse.SERVER_ERROR);
     }
+  }
+
+  @Get('/check')
+  async checkDuplication(@Query() query: { id: string; nickname: string }) {
+    const { id, nickname } = query;
+
+    if (!!id) {
+      await this.userService.checkId(id);
+    } else if (!!nickname) {
+      await this.userService.checkNickname(nickname);
+    } else {
+      return errResponse(baseResponse.CHECK_PARAM_EMPTY);
+    }
+
+    return response(baseResponse.SUCCESS);
   }
 
   @UseGuards(AuthGuard('jwt'))
