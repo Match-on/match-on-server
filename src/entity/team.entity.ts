@@ -39,6 +39,6 @@ export class Team {
   @OneToMany(() => Member, (member) => member.team)
   members: Member[];
 
-  @ManyToMany(() => User, (user) => user.favorites)
+  @ManyToMany(() => User, (user) => user.favoritTeams)
   favorites: User[];
 }

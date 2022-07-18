@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Lecture } from './lecture.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -30,4 +31,7 @@ export class Univ {
 
   @OneToMany(() => User, (user) => user.univ)
   students: User[];
+
+  @OneToMany(() => Lecture, (lecture) => lecture.univ)
+  lectures: Lecture[];
 }

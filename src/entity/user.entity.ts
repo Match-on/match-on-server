@@ -17,6 +17,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Member } from './member.entity';
 import { Team } from './team.entity';
 import { Univ } from './univ.entity';
+import { Lecture } from './lecture.entity';
 
 @Entity()
 export class User {
@@ -62,9 +63,12 @@ export class User {
 
   @ManyToMany(() => Team, (team) => team.favorites)
   @JoinTable({ name: 'favorite_team' })
-  favorites: Team[];
+  favoritTeams: Team[];
+  @ManyToMany(() => Lecture, (lecture) => lecture.favorites)
+  @JoinTable({ name: 'favorite_lecture' })
+  favoritLectures: Lecture[];
 
-  @ManyToOne(() => Univ, (univ) => univ.students)
+  @ManyToOne(() => Univ, (univ) => univ.students, { lazy: true })
   univ: Univ;
 
   @BeforeInsert()

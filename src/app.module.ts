@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TeamModule } from './team/team.module';
 import { UnivModule } from './univ/univ.module';
 import { EmailModule } from './email/email.module';
+import { LectureModule } from './lecture/lecture.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { EmailModule } from './email/email.module';
     TeamModule,
     UnivModule,
     EmailModule,
+    LectureModule,
   ],
   controllers: [AppController],
   providers: [AppService],
