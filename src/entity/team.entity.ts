@@ -18,7 +18,7 @@ export class Team {
 
   @Column({ type: 'varchar', length: 20, unique: true })
   id: string;
-  @Column({ type: 'varchar', length: 10 })
+  @Column({ type: 'varchar', length: 50 })
   name: string;
   @Column({ type: 'varchar', length: 200, default: '' })
   description: string;
