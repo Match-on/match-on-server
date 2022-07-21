@@ -54,6 +54,12 @@ export class LectureController {
     return response(baseResponse.SUCCESS, lectureResult);
   }
 
+  @Get('/filter')
+  async getFilter(@User() user: any): Promise<object> {
+    const lectureFilter = await this.lectureService.readFilter(user.userIdx);
+    return response(baseResponse.SUCCESS, lectureFilter);
+  }
+
   @Post('/favorites')
   async postFavorite(@User() user: any, @Body() createFavoriteData: CreateFavoriteDto): Promise<object> {
     const lectureIdx = createFavoriteData.lectureIdx;

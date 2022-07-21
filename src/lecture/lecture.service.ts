@@ -40,6 +40,34 @@ export class LectureService {
     return lectures;
   }
 
+  async readFilter(userIdx: number): Promise<any> {
+    const distinctFilters = await this.lectureRepository
+      .createQueryBuilder()
+      .from('user', 'u')
+      .where({ userIdx })
+      .leftJoin('u.univ', 'un')
+      .leftJoin('un.lectures', 'l')
+      .select(['l.type as type', 'l.grade as grade', 'l.year as year', 'l.semester as semester'])
+      .distinct(true)
+      .getRawMany();
+    const filter = {
+      types: new Set(),
+      grades: new Set(),
+      years: new Set(),
+      semesters: new Set(),
+    };
+    distinctFilters.forEach((f) => {
+      filter.types.add(f.type);
+      filter.grades.add(f.grade);
+      filter.years.add(f.year);
+      filter.semesters.add(f.semester);
+    });
+    Object.entries(filter).forEach(([key, value]) => {
+      filter[key] = [...value].sort();
+    });
+    return filter;
+  }
+
   async createFavorite(userIdx: number, lectureIdx: number): Promise<void> {
     await this.readLecture(lectureIdx);
     await this.lectureRepository.upsertFavorite(userIdx, lectureIdx);
