@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { response, errResponse } from 'src/config/response';
+import { User } from 'src/entity/user.entity';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -16,7 +17,7 @@ export class AuthService {
     else if (user.status === 'N') return errResponse(baseResponse.DEACTIVATED_USER);
   }
 
-  async validateUser(id: string, password: string): Promise<any> {
+  async validateUser(id: string, password: string): Promise<User> {
     const user = await this.userService.findOneById(id);
     if (!user) errResponse(baseResponse.NOT_EXIST_USER);
     else if (user.deletedAt !== null) errResponse(baseResponse.WITHDRAWAL_USER);
@@ -31,7 +32,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const jwt = this.jwtService.sign({ userIdx: user.userIdx, role: 'user' });
+    const jwt = this.jwtService.sign({ userIdx: user.userIdx, univIdx: user.univUnivIdx || null, role: 'user' });
     return response(baseResponse.SUCCESS, { userIdx: user.userIdx, token: jwt });
   }
 }

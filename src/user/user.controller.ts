@@ -82,6 +82,7 @@ export class UserController {
     const userResult = await this.userService.findOneByIdx(userIdx);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { countryCode, birth, status, enrolledAt, updatedAt, deletedAt, ...result } = userResult;
+    result['univName'] = (await userResult.univ).name || null;
 
     if (!userResult) {
       return errResponse(baseResponse.SERVER_ERROR);
