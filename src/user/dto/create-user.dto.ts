@@ -12,7 +12,7 @@ import {
 
 export class CreateUserDto {
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   readonly univIdx: number;
   @IsString()
   @IsNotEmpty()

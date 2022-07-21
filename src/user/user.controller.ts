@@ -22,7 +22,11 @@ export class UserController {
   @Post()
   async postUser(@Body() createUserData: CreateUserDto): Promise<object> {
     const userResult = await this.userService.createUser(createUserData);
-    const jwt = this.jwtService.sign({ userIdx: userResult.userIdx, role: 'user' });
+    const jwt = this.jwtService.sign({
+      userIdx: userResult.userIdx,
+      univIdx: (await userResult.univ)?.univIdx || null,
+      role: 'user',
+    });
 
     if (userResult) {
       return response(baseResponse.SUCCESS, { userIdx: userResult.userIdx, jwt: jwt });

@@ -1,11 +1,13 @@
+import { Univ } from 'src/entity/univ.entity';
 import { User } from 'src/entity/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  async insertUser(createUserDto: CreateUserDto): Promise<User> {
-    const user: User = this.create(createUserDto);
+  async insertUser(createUserData: CreateUserDto, univ?: Univ): Promise<User> {
+    const user: User = this.create(createUserData);
+    user.univ = univ;
     const result: User = await this.save(user);
     return result;
   }

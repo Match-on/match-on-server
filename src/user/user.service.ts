@@ -3,8 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse } from 'src/config/response';
+import { Univ } from 'src/entity/univ.entity';
 import { User } from 'src/entity/user.entity';
 import { UserRepository } from 'src/repository/user.repository';
+import { UnivService } from 'src/univ/univ.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,15 +16,22 @@ export class UserService {
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private univService: UnivService,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserData: CreateUserDto): Promise<User> {
     await Promise.all([
-      this.checkId(createUserDto.id),
-      this.checkEmail(createUserDto.email),
-      this.checkNickname(createUserDto.nickname),
+      this.checkId(createUserData.id),
+      this.checkEmail(createUserData.email),
+      this.checkNickname(createUserData.nickname),
     ]);
-    const result = await this.userRepository.insertUser(createUserDto);
+
+    let univ: Univ = null;
+    if (!!createUserData.univIdx) {
+      univ = await this.univService.findOneByIdx(createUserData.univIdx);
+    }
+
+    const result = await this.userRepository.insertUser(createUserData, univ);
     return result;
   }
 
