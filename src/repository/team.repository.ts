@@ -61,4 +61,16 @@ export class TeamRepository extends Repository<Team> {
       .getOne();
     return teams;
   }
+  async upsertFavorite(userIdx: number, teamIdx: number): Promise<void> {
+    await this.createQueryBuilder()
+      .insert()
+      .into('favorite_team')
+      .values({ userUserIdx: userIdx, teamTeameIdx: teamIdx })
+      .orIgnore()
+      .execute();
+  }
+
+  async deleteFavorite(userIdx: number, teamIdx: number): Promise<void> {
+    await this.createQueryBuilder().relation('favorites').of({ teamIdx }).remove({ userIdx });
+  }
 }

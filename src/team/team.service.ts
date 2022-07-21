@@ -33,6 +33,10 @@ export class TeamService {
 
   async readTeam(teamIdx: number): Promise<Team> {
     const team = await this.teamRepository.findOne({ teamIdx });
+
+    if (!team || !!team.deletedAt || team.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_TEAM);
+    }
     return team;
   }
 
@@ -109,11 +113,12 @@ export class TeamService {
   }
 
   async createFavorite(userIdx: number, teamIdx: number): Promise<void> {
-    await this.deleteFavorite(userIdx, teamIdx);
-    await this.teamRepository.createQueryBuilder('t').relation('favorites').of({ teamIdx }).add({ userIdx });
+    await this.readTeam(teamIdx);
+    await this.teamRepository.upsertFavorite(userIdx, teamIdx);
   }
 
   async deleteFavorite(userIdx: number, teamIdx: number): Promise<void> {
-    await this.teamRepository.createQueryBuilder('t').relation('favorites').of({ teamIdx }).remove({ userIdx });
+    await this.readTeam(teamIdx);
+    await this.teamRepository.deleteFavorite(userIdx, teamIdx);
   }
 }

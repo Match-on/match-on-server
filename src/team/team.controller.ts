@@ -161,22 +161,12 @@ export class TeamController {
   async postFavorite(@User() user: any, @Body() createFavoriteData: CreateFavoriteDto): Promise<object> {
     const teamIdx = createFavoriteData.teamIdx;
 
-    const teamResult = await this.teamService.readTeam(teamIdx);
-    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
-      return errResponse(baseResponse.NOT_EXIST_TEAM);
-    }
-
     await this.teamService.createFavorite(user.userIdx, teamIdx);
     return response(baseResponse.SUCCESS);
   }
   @UseGuards(AuthGuard('jwt'))
   @Delete('/favorites/:teamIdx')
   async deleteFavorite(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
-    const teamResult = await this.teamService.readTeam(teamIdx);
-    if (!teamResult || !!teamResult.deletedAt || teamResult.status != 'Y') {
-      return errResponse(baseResponse.NOT_EXIST_TEAM);
-    }
-
     await this.teamService.deleteFavorite(user.userIdx, teamIdx);
     return response(baseResponse.SUCCESS);
   }
