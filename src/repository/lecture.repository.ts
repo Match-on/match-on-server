@@ -50,4 +50,25 @@ export class LectureRepository extends Repository<Lecture> {
       .getRawMany();
     return lectures;
   }
+  async upsertFavorite(userIdx: number, lectureIdx: number): Promise<void> {
+    await this.createQueryBuilder()
+      .insert()
+      .into('favorite_lecture')
+      .values({ userUserIdx: userIdx, lectureLectureIdx: lectureIdx })
+      .orIgnore()
+      .execute();
+  }
+
+  async findFavorites(userIdx: number): Promise<Lecture[]> {
+    const lectures = await this.createQueryBuilder('l')
+      .innerJoin('l.favorites', 'u')
+      .where('u.userIdx = :userIdx', { userIdx })
+      .select(['l.lectureIdx', 'l.name', 'l.type', 'l.instructor', 'l.credit', 'l.time'])
+      .getMany();
+    return lectures;
+  }
+
+  async deleteFavorite(userIdx: number, lectureIdx: number): Promise<void> {
+    await this.createQueryBuilder().relation('favorites').of({ lectureIdx }).remove({ userIdx });
+  }
 }

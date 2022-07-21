@@ -1,8 +1,20 @@
-import { Controller, Get, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { SearchLectureDto } from './dto/search-lecture.dto';
 import { LectureService } from './lecture.service';
 
@@ -11,7 +23,6 @@ import { LectureService } from './lecture.service';
 export class LectureController {
   constructor(private readonly lectureService: LectureService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('/search')
   async getLecture(
     @User() user: any,
@@ -41,5 +52,25 @@ export class LectureController {
     );
 
     return response(baseResponse.SUCCESS, lectureResult);
+  }
+
+  @Post('/favorites')
+  async postFavorite(@User() user: any, @Body() createFavoriteData: CreateFavoriteDto): Promise<object> {
+    const lectureIdx = createFavoriteData.lectureIdx;
+
+    await this.lectureService.createFavorite(user.userIdx, lectureIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @Get('/favorites')
+  async getFavorites(@User() user: any): Promise<object> {
+    const favoriteLectures = await this.lectureService.readFavorites(user.userIdx);
+    return response(baseResponse.SUCCESS, favoriteLectures);
+  }
+
+  @Delete('/favorites/:lectureIdx')
+  async deleteFavorite(@User() user: any, @Param('lectureIdx', ParseIntPipe) lectureIdx: number): Promise<object> {
+    await this.lectureService.deleteFavorite(user.userIdx, lectureIdx);
+    return response(baseResponse.SUCCESS);
   }
 }

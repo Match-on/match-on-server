@@ -34,6 +34,8 @@ export const baseResponse: {[k:string]:BaseResponse} = {
 
   NOT_EXIST_TEAM: { "isSuccess": false, "code": 3010, "message": "존재하지 않는 팀입니다." },
 
+  NOT_EXIST_LECTURE: { "isSuccess": false, "code": 3011, "message": "존재하지 않는 수업입니다." },
+
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
   // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },

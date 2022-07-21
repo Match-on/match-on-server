@@ -50,6 +50,6 @@ export class Lecture {
 
   @ManyToOne(() => Univ, (univ) => univ.lectures)
   univ: Univ;
-  @ManyToMany(() => User, (user) => user.favoritLectures)
+  @ManyToMany(() => User, (user) => user.favoritLectures, { lazy: true })
   favorites: User[];
 }
