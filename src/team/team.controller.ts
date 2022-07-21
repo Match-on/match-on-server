@@ -57,7 +57,7 @@ export class TeamController {
     await this.teamService.checkTeamMember(teamIdx, user.userIdx);
     if (type == 'profile') {
       const teamResult = await this.teamService.readTeamProfile(teamIdx);
-      return response(baseResponse.SUCCESS, { team: teamResult });
+      return response(baseResponse.SUCCESS, teamResult);
     } else if (type == 'main') {
       // TODO: 팀 메인정보
       return response(baseResponse.SUCCESS, {});
