@@ -65,7 +65,7 @@ export class TeamRepository extends Repository<Team> {
     await this.createQueryBuilder()
       .insert()
       .into('favorite_team')
-      .values({ userUserIdx: userIdx, teamTeameIdx: teamIdx })
+      .values({ userUserIdx: userIdx, teamTeamIdx: teamIdx })
       .orIgnore()
       .execute();
   }
