@@ -38,6 +38,7 @@ export class LectureRepository extends Repository<Lecture> {
       .select([
         'l.lectureIdx as lectureIdx',
         'l.type as type',
+        'l.name as name',
         'l.department as department',
         'l.instructor as instructor',
         'l.grade as grade',
