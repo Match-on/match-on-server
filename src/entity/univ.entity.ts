@@ -17,6 +17,12 @@ export class Univ {
 
   @Column({ type: 'varchar', length: 20 })
   name: string;
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  campus: string;
+  @Column({ type: 'varchar', length: 10 })
+  region: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  address: string;
   @Column({ type: 'varchar', length: 20 })
   domain: string;
 

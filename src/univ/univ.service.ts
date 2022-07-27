@@ -32,7 +32,7 @@ export class UnivService {
   }
   async findByName(keyword: string): Promise<Univ[]> {
     return this.univRepository.find({
-      select: ['univIdx', 'name', 'domain'],
+      select: ['univIdx', 'name', 'campus', 'domain', 'region', 'address'],
       where: { name: Like(`%${keyword}%`), status: 'Y' },
       order: { name: 'ASC' },
     });
