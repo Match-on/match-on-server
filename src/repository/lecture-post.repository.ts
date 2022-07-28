@@ -8,6 +8,7 @@ import { createQueryBuilder, EntityRepository, OrderByCondition, Repository } fr
 export class LecturePostRepository extends Repository<LecturePost> {
   async insertPost(user: any, lecture: any, createPostData: CreatePostDto): Promise<LecturePost> {
     const post: LecturePost = this.create(createPostData);
+    if (post.type != 'free') post.isAnonymous = false;
     post.user = user;
     post.lecture = lecture;
     const result: LecturePost = await this.save(post);
@@ -52,16 +53,49 @@ export class LecturePostRepository extends Repository<LecturePost> {
     const posts = qb.getRawMany();
     return posts;
   }
-  async findByIdx(userIdx: number, lecturePostIdx: number): Promise<LecturePost> {
-    const post = await this.createQueryBuilder('lp')
-      .leftJoinAndSelect('lp.user', 'u')
+  async findByIdx(userIdx: number, lecturePostIdx: number): Promise<{ entities: LecturePost[]; raw: any[] }> {
+    const hitsQb = createQueryBuilder(LecturePostHit, 'lph')
+      .select('COUNT(*)')
+      .where('postLecturePostIdx = lp.lecturePostIdx');
+    const commentQb = createQueryBuilder(LecturePostComment, 'lpc')
+      .select('COUNT(*)')
+      .where('postLecturePostIdx = lp.lecturePostIdx');
+
+    const result = await this.createQueryBuilder('lp')
+      .leftJoin('lp.user', 'u')
+      .leftJoin('lp.comments', 'pc', 'lp.lecturePostIdx = pc.postLecturePostIdx and pc.parentCommentCommentIdx IS NULL')
+      .leftJoin('pc.user', 'pcu')
+      .leftJoin('pcu.lecturePostAnonynames', 'pca', `pca.postLecturePostIdx = ${lecturePostIdx}`)
+      .leftJoin('pc.childComments', 'cc')
+      .leftJoin('cc.user', 'ccu')
+      .leftJoin('ccu.lecturePostAnonynames', 'cca', `cca.postLecturePostIdx = ${lecturePostIdx}`)
       .where({ lecturePostIdx })
-      .select(['lecturePostIdx', 'title', 'body', 'lp.createdAt'])
+      .select([
+        'lp.title',
+        'lp.body',
+        'lp.createdAt',
+        'pc.commentIdx',
+        'pc.comment',
+        'pc.createdAt',
+        'pcu.userIdx',
+        'pcu.nickname',
+        'pca.anonyname',
+        'cc.commentIdx',
+        'cc.comment',
+        'cc.createdAt',
+        'ccu.userIdx',
+        'ccu.nickname',
+        'cca.anonyname',
+      ])
       .addSelect(`if(isAnonymous, '익명', u.nickname) as writer`)
       .addSelect(`if(isAnonymous, null, u.profileUrl) as profileUrl`)
-      .addSelect(`if(userIdx = ${userIdx}, true, false) as isMe`)
-      .getRawOne();
-    return post;
+      .addSelect(`(${hitsQb.getQuery()}) as hitCount`)
+      .addSelect(`(${commentQb.getQuery()}) as commentCount`)
+      .addSelect(`if(u.userIdx = ${userIdx}, true, false) as isMe`)
+      .addSelect(`lp.isAnonymous as isAnonymous`)
+      .addSelect(`lp.type as type`)
+      .getRawAndEntities();
+    return result;
   }
   async upsertPostHit(userIdx: number, lecturePostIdx: number, date: string): Promise<void> {
     await this.createQueryBuilder()

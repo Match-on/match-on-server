@@ -105,12 +105,37 @@ export class LectureService {
     }
   }
   async readPost(userIdx: number, lecturePostIdx: number): Promise<any> {
-    const post = await this.lecturePostRepository.findByIdx(userIdx, lecturePostIdx);
+    const result = await this.lecturePostRepository.findByIdx(userIdx, lecturePostIdx);
 
-    if (!post) {
+    if (result.raw.length == 0) {
       return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
     }
     await this.createPostHit(userIdx, lecturePostIdx);
+    let post: any = result.entities[0];
+    const { writer, profileUrl, hitCount, commentCount, isMe } = result.raw[0];
+    post = { writer, profileUrl, hitCount, commentCount, isMe, ...post };
+    if (!!post.comments) {
+      post.comments.forEach((comment) => {
+        if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
+          const anonyname = comment.user.lecturePostAnonynames[0].anonyname;
+          comment['name'] = '익명 ' + anonyname;
+        } else {
+          const nickname = comment.user.nickname;
+          comment['name'] = nickname;
+        }
+        delete comment['user'];
+        comment.childComments.forEach((child) => {
+          if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
+            const anonyname = child.user.lecturePostAnonynames[0].anonyname;
+            child['name'] = '익명 ' + anonyname;
+          } else {
+            const nickname = child.user.nickname;
+            child['name'] = nickname;
+          }
+          delete child['user'];
+        });
+      });
+    }
     return post;
   }
   async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: UpdatePostDto): Promise<UpdateResult> {
