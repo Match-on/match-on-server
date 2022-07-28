@@ -15,10 +15,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ReadPostDto } from './dto/read-post.dto';
 import { SearchLectureDto } from './dto/search-lecture.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LectureService } from './lecture.service';
 
@@ -126,6 +128,31 @@ export class LectureController {
   @Delete('/posts/:lecturePostIdx')
   async deletePosts(@User() user: any, @Param('lecturePostIdx', ParseIntPipe) lecturePostIdx: number): Promise<object> {
     await this.lectureService.deletePost(user.userIdx, lecturePostIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @Post('/posts/:lecturePostIdx/comments')
+  async postComment(
+    @User() user: any,
+    @Param('lecturePostIdx', ParseIntPipe) lecturePostIdx: number,
+    @Body() createCommentData: CreateCommentDto,
+  ): Promise<object> {
+    const { type, comment, parentIdx } = createCommentData;
+    await this.lectureService.createComment(user.userIdx, lecturePostIdx, type, comment, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @Patch('/posts/comments/:commentIdx')
+  async patchComment(
+    @User() user: any,
+    @Param('commentIdx', ParseIntPipe) commentIdx: number,
+    @Body() updateCommentData: UpdateCommentDto,
+  ): Promise<object> {
+    await this.lectureService.updateComment(user.userIdx, commentIdx, updateCommentData.comment);
+    return response(baseResponse.SUCCESS);
+  }
+  @Delete('/posts/comments/:commentIdx')
+  async deleteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.lectureService.deleteComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
 }

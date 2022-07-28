@@ -5,9 +5,13 @@ import { LectureService } from './lecture.service';
 import { LectureController } from './lecture.controller';
 import { UserModule } from 'src/user/user.module';
 import { LecturePostRepository } from 'src/repository/lecture-post.repository';
+import { LecturePostCommentRepository } from 'src/repository/lecture-post-comment.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LectureRepository, LecturePostRepository]), UserModule],
+  imports: [
+    TypeOrmModule.forFeature([LectureRepository, LecturePostRepository, LecturePostCommentRepository]),
+    UserModule,
+  ],
   providers: [LectureService],
   controllers: [LectureController],
 })

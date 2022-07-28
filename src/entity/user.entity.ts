@@ -20,6 +20,8 @@ import { Univ } from './univ.entity';
 import { Lecture } from './lecture.entity';
 import { LecturePost } from './lecture-post.entity';
 import { LecturePostHit } from './lecture-post-hit.entity';
+import { LecturePostComment } from './lecture-post-comment.entity';
+import { LecturePostAnonyname } from './lecture-post-anonyname.entity';
 
 @Entity()
 export class User {
@@ -76,6 +78,10 @@ export class User {
   lecturePosts: LecturePost[];
   @OneToMany(() => LecturePostHit, (hit) => hit.user)
   lecturePostHits: LecturePostHit[];
+  @OneToMany(() => LecturePostComment, (comment) => comment.user)
+  lecturePostComments: LecturePostComment[];
+  @OneToMany(() => LecturePostAnonyname, (anonyname) => anonyname.user)
+  lecturePostAnonynames: LecturePostAnonyname[];
 
   @BeforeInsert()
   @BeforeUpdate()

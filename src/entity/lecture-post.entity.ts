@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { LecturePostAnonyname } from './lecture-post-anonyname.entity';
+import { LecturePostComment } from './lecture-post-comment.entity';
 import { LecturePostHit } from './lecture-post-hit.entity';
 import { Lecture } from './lecture.entity';
 import { User } from './user.entity';
@@ -41,4 +43,8 @@ export class LecturePost {
   user: User;
   @OneToMany(() => LecturePostHit, (hit) => hit.post)
   hits: LecturePostHit[];
+  @OneToMany(() => LecturePostComment, (comment) => comment.post)
+  comments: LecturePostComment[];
+  @OneToMany(() => LecturePostAnonyname, (anonyname) => anonyname.post)
+  anonynames: LecturePostAnonyname[];
 }

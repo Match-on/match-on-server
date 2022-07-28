@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse } from 'src/config/response';
 import { Lecture } from 'src/entity/lecture.entity';
+import { LecturePostCommentRepository } from 'src/repository/lecture-post-comment.repository';
 import { LecturePostRepository } from 'src/repository/lecture-post.repository';
 import { LectureRepository } from 'src/repository/lecture.repository';
 import { UserService } from 'src/user/user.service';
@@ -16,6 +17,7 @@ export class LectureService {
   constructor(
     @InjectRepository(LectureRepository) private lectureRepository: LectureRepository,
     @InjectRepository(LecturePostRepository) private lecturePostRepository: LecturePostRepository,
+    @InjectRepository(LecturePostCommentRepository) private lecturePostCommentRepository: LecturePostCommentRepository,
     private userService: UserService,
   ) {}
 
@@ -97,7 +99,10 @@ export class LectureService {
   }
   async createPost(userIdx: number, lectureIdx: number, createPostData: CreatePostDto): Promise<void> {
     await this.readLecture(lectureIdx);
-    await this.lecturePostRepository.insertPost({ userIdx }, { lectureIdx }, createPostData);
+    const post = await this.lecturePostRepository.insertPost({ userIdx }, { lectureIdx }, createPostData);
+    if (createPostData.type == 'free') {
+      await this.lecturePostCommentRepository.initAnonyname(userIdx, post.lecturePostIdx);
+    }
   }
   async readPost(userIdx: number, lecturePostIdx: number): Promise<any> {
     const post = await this.lecturePostRepository.findByIdx(userIdx, lecturePostIdx);
@@ -140,5 +145,51 @@ export class LectureService {
   async createPostHit(userIdx: number, lecturePostIdx: number): Promise<void> {
     const today = new Date();
     await this.lecturePostRepository.upsertPostHit(userIdx, lecturePostIdx, today.toISOString().substring(0, 10));
+  }
+
+  async createComment(
+    userIdx: number,
+    lecturePostIdx: number,
+    type: string,
+    comment: string,
+    parentIdx: number,
+  ): Promise<void> {
+    if (type == 'free') {
+      await this.lecturePostCommentRepository.insertAnonyname(userIdx, lecturePostIdx);
+    }
+    await this.lecturePostCommentRepository.insertComment(
+      { userIdx },
+      { lecturePostIdx },
+      { comment },
+      { commentIdx: parentIdx },
+    );
+  }
+  async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const post = await this.lecturePostCommentRepository
+      .createQueryBuilder()
+      .where({ commentIdx })
+      .select('userUserIdx', 'userIdx')
+      .getRawOne();
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST_COMMENT);
+    } else if (post.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.lecturePostCommentRepository.update(commentIdx, { comment });
+    return updateResult;
+  }
+  async deleteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const post = await this.lecturePostCommentRepository
+      .createQueryBuilder()
+      .where({ commentIdx })
+      .select('userUserIdx', 'userIdx')
+      .getRawOne();
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST_COMMENT);
+    } else if (post.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.lecturePostCommentRepository.softDelete({ commentIdx });
+    return deleteResult;
   }
 }

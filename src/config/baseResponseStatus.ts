@@ -36,6 +36,7 @@ export const baseResponse: {[k:string]:BaseResponse} = {
 
   NOT_EXIST_LECTURE: { "isSuccess": false, "code": 3011, "message": "존재하지 않는 수업입니다." },
   NOT_EXIST_LECTURE_POST: { "isSuccess": false, "code": 3012, "message": "존재하지 않는 수업게시글 입니다." },
+  NOT_EXIST_LECTURE_POST_COMMENT: { "isSuccess": false, "code": 3013, "message": "존재하지 않는 댓글입니다." },
 
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
