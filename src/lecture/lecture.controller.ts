@@ -41,12 +41,7 @@ export class LectureController {
     )
     query: SearchLectureDto,
   ): Promise<object> {
-    const { offset, keyword, type, grade, when } = query;
-    let year: number, semester: number;
-    if (when) {
-      year = parseInt(when.split('-')[0]);
-      semester = parseInt(when.split('-')[1]);
-    }
+    const { offset, keyword, type, grade, year, semester } = query;
     const lectureResult = await this.lectureService.readLectures(
       user.userIdx,
       offset,

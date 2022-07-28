@@ -19,6 +19,11 @@ export class SearchLectureDto {
   @IsNumber()
   readonly grade?: number;
   @IsOptional()
-  @IsString()
-  readonly when?: string;
+  @Type(() => Number)
+  @IsNumber()
+  readonly year?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  readonly semester?: number;
 }
