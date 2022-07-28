@@ -77,14 +77,14 @@ export class LecturePostRepository extends Repository<LecturePost> {
         'pc.commentIdx',
         'pc.comment',
         'pc.createdAt',
-        'pcu.userIdx',
         'pcu.nickname',
+        'pcu.profileUrl',
         'pca.anonyname',
         'cc.commentIdx',
         'cc.comment',
         'cc.createdAt',
-        'ccu.userIdx',
         'ccu.nickname',
+        'ccu.profileUrl',
         'cca.anonyname',
       ])
       .addSelect(`if(isAnonymous, '익명', u.nickname) as writer`)

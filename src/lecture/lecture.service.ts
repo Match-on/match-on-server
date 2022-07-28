@@ -119,18 +119,20 @@ export class LectureService {
         if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
           const anonyname = comment.user.lecturePostAnonynames[0].anonyname;
           comment['name'] = '익명 ' + anonyname;
+          comment['profileUrl'] = null;
         } else {
-          const nickname = comment.user.nickname;
-          comment['name'] = nickname;
+          comment['name'] = comment.user.nickname;
+          comment['profileUrl'] = comment.user.profileUrl;
         }
         delete comment['user'];
         comment.childComments.forEach((child) => {
           if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
             const anonyname = child.user.lecturePostAnonynames[0].anonyname;
             child['name'] = '익명 ' + anonyname;
+            child['profileUrl'] = null;
           } else {
-            const nickname = child.user.nickname;
-            child['name'] = nickname;
+            child['name'] = child.user.nickname;
+            child['profileUrl'] = child.user.profileUrl;
           }
           delete child['user'];
         });
