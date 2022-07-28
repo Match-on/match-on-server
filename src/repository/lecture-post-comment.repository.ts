@@ -37,25 +37,4 @@ export class LecturePostCommentRepository extends Repository<LecturePostComment>
       .orIgnore()
       .execute();
   }
-
-  async findByIdx(userIdx: number, lecturePostIdx: number): Promise<LecturePostComment> {
-    const post = await this.createQueryBuilder('lp')
-      .leftJoinAndSelect('lp.user', 'u')
-      .where({ lecturePostIdx })
-      .select(['lecturePostIdx', 'title', 'body', 'lp.createdAt'])
-      .addSelect(`if(isAnonymous, '익명', u.nickname) as writer`)
-      .addSelect(`if(isAnonymous, null, u.profileUrl) as profileUrl`)
-      .addSelect(`if(userIdx = ${userIdx}, true, false) as isMe`)
-      .getRawOne();
-    return post;
-  }
-  async upsertPostHit(userIdx: number, lecturePostIdx: number, date: string): Promise<void> {
-    await this.createQueryBuilder()
-      .insert()
-      .into('lecture_post_hit')
-      .values({ user: { userIdx }, post: { lecturePostIdx }, date })
-      .updateEntity(false)
-      .orIgnore()
-      .execute();
-  }
 }
