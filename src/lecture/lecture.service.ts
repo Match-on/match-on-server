@@ -3,13 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse } from 'src/config/response';
 import { Lecture } from 'src/entity/lecture.entity';
+import { LecturePostRepository } from 'src/repository/lecture-post.repository';
 import { LectureRepository } from 'src/repository/lecture.repository';
 import { UserService } from 'src/user/user.service';
+import { DeleteResult, UpdateResult } from 'typeorm';
+import { CreatePostDto } from './dto/create-post.dto';
+import { ReadPostDto } from './dto/read-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class LectureService {
   constructor(
     @InjectRepository(LectureRepository) private lectureRepository: LectureRepository,
+    @InjectRepository(LecturePostRepository) private lecturePostRepository: LecturePostRepository,
     private userService: UserService,
   ) {}
 
@@ -81,5 +87,58 @@ export class LectureService {
   async deleteFavorite(userIdx: number, lectureIdx: number): Promise<void> {
     await this.readLecture(lectureIdx);
     await this.lectureRepository.deleteFavorite(userIdx, lectureIdx);
+  }
+
+  async readPosts(lectureIdx: number, query: ReadPostDto): Promise<any> {
+    await this.readLecture(lectureIdx);
+    const { type, sort, cursor } = query;
+    const result = await this.lecturePostRepository.findWithQuery(lectureIdx, type, sort, cursor);
+    return result;
+  }
+  async createPost(userIdx: number, lectureIdx: number, createPostData: CreatePostDto): Promise<void> {
+    await this.readLecture(lectureIdx);
+    await this.lecturePostRepository.insertPost({ userIdx }, { lectureIdx }, createPostData);
+  }
+  async readPost(userIdx: number, lecturePostIdx: number): Promise<any> {
+    const post = await this.lecturePostRepository.findByIdx(userIdx, lecturePostIdx);
+
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
+    }
+    await this.createPostHit(userIdx, lecturePostIdx);
+    return post;
+  }
+  async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: UpdatePostDto): Promise<UpdateResult> {
+    const post = await this.lecturePostRepository
+      .createQueryBuilder()
+      .where({ lecturePostIdx })
+      .select('userUserIdx', 'userIdx')
+      .getRawOne();
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
+    } else if (post.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.lecturePostRepository.update(lecturePostIdx, updatePostData);
+    return updateResult;
+  }
+  async deletePost(userIdx: number, lecturePostIdx: number): Promise<DeleteResult> {
+    const post = await this.lecturePostRepository
+      .createQueryBuilder()
+      .where({ lecturePostIdx })
+      .select('userUserIdx', 'userIdx')
+      .getRawOne();
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
+    } else if (post.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.lecturePostRepository.softDelete({ lecturePostIdx });
+    return deleteResult;
+  }
+
+  async createPostHit(userIdx: number, lecturePostIdx: number): Promise<void> {
+    const today = new Date();
+    await this.lecturePostRepository.upsertPostHit(userIdx, lecturePostIdx, today.toISOString().substring(0, 10));
   }
 }

@@ -5,9 +5,11 @@ import {
   Entity,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { LecturePost } from './lecture-post.entity';
 import { Univ } from './univ.entity';
 import { User } from './user.entity';
 
@@ -52,4 +54,6 @@ export class Lecture {
   univ: Univ;
   @ManyToMany(() => User, (user) => user.favoritLectures, { lazy: true })
   favorites: User[];
+  @OneToMany(() => LecturePost, (post) => post.lecture)
+  posts: LecturePost[];
 }

@@ -18,6 +18,8 @@ import { Member } from './member.entity';
 import { Team } from './team.entity';
 import { Univ } from './univ.entity';
 import { Lecture } from './lecture.entity';
+import { LecturePost } from './lecture-post.entity';
+import { LecturePostHit } from './lecture-post-hit.entity';
 
 @Entity()
 export class User {
@@ -70,6 +72,10 @@ export class User {
 
   @ManyToOne(() => Univ, (univ) => univ.students, { lazy: true })
   univ: Univ;
+  @OneToMany(() => LecturePost, (post) => post.user)
+  lecturePosts: LecturePost[];
+  @OneToMany(() => LecturePostHit, (hit) => hit.user)
+  lecturePostHits: LecturePostHit[];
 
   @BeforeInsert()
   @BeforeUpdate()
