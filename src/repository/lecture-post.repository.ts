@@ -1,5 +1,6 @@
 import { LecturePostComment } from 'src/entity/lecture-post-comment.entity';
 import { LecturePostHit } from 'src/entity/lecture-post-hit.entity';
+import { LecturePostResume } from 'src/entity/lecture-post-resume.entity';
 import { LecturePost } from 'src/entity/lecture-post.entity';
 import { CreatePostDto } from 'src/lecture/dto/create-post.dto';
 import { createQueryBuilder, EntityRepository, OrderByCondition, Repository } from 'typeorm';
@@ -71,6 +72,7 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .leftJoin('ccu.lecturePostAnonynames', 'cca', `cca.postLecturePostIdx = ${lecturePostIdx}`)
       .where({ lecturePostIdx })
       .select([
+        'lp.lecturePostIdx',
         'lp.title',
         'lp.body',
         'lp.createdAt',
@@ -92,7 +94,6 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .addSelect(`(${hitsQb.getQuery()}) as hitCount`)
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`if(u.userIdx = ${userIdx}, true, false) as isMe`)
-      .addSelect(`lp.isAnonymous as isAnonymous`)
       .addSelect(`lp.type as type`)
       .getRawAndEntities();
     return result;
@@ -105,5 +106,23 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .updateEntity(false)
       .orIgnore()
       .execute();
+  }
+
+  async insertResume(user: any, post: any, body: string): Promise<void> {
+    await this.createQueryBuilder()
+      .insert()
+      .into('lecture_post_resume')
+      .values({ user, post, body })
+      .updateEntity(false)
+      .orIgnore()
+      .execute();
+  }
+  async findResumes(lecturePostIdx: number): Promise<LecturePostResume[]> {
+    const result = await createQueryBuilder(LecturePostResume, 'lpr')
+      .where({ post: { lecturePostIdx } })
+      .leftJoin('lpr.user', 'u')
+      .select(['lpr.body', 'u.userIdx', 'u.nickname', 'u.profileUrl'])
+      .getMany();
+    return result;
   }
 }

@@ -18,6 +18,7 @@ import { User } from 'src/user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreateResumeDto } from './dto/create-resume.dto';
 import { ReadPostDto } from './dto/read-post.dto';
 import { SearchLectureDto } from './dto/search-lecture.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -148,6 +149,17 @@ export class LectureController {
   @Delete('/posts/comments/:commentIdx')
   async deleteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
     await this.lectureService.deleteComment(user.userIdx, commentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @Post('/posts/:lecturePostIdx/resumes')
+  async postResume(
+    @User() user: any,
+    @Param('lecturePostIdx', ParseIntPipe) lecturePostIdx: number,
+    @Body() createResumeData: CreateResumeDto,
+  ): Promise<object> {
+    console.log('here?');
+    await this.lectureService.createResume(user.userIdx, lecturePostIdx, createResumeData.body);
     return response(baseResponse.SUCCESS);
   }
 }

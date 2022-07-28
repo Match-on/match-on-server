@@ -111,12 +111,13 @@ export class LectureService {
       return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
     }
     await this.createPostHit(userIdx, lecturePostIdx);
+
     let post: any = result.entities[0];
     const { writer, profileUrl, hitCount, commentCount, isMe } = result.raw[0];
     post = { writer, profileUrl, hitCount, commentCount, isMe, ...post };
     if (!!post.comments) {
       post.comments.forEach((comment) => {
-        if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
+        if (result.raw[0]['type'] == 'free') {
           const anonyname = comment.user.lecturePostAnonynames[0].anonyname;
           comment['name'] = '익명 ' + anonyname;
           comment['profileUrl'] = null;
@@ -126,7 +127,7 @@ export class LectureService {
         }
         delete comment['user'];
         comment.childComments.forEach((child) => {
-          if (result.raw[0]['type'] == 'free' && result.raw[0]['isAnonymous'] == 1) {
+          if (result.raw[0]['type'] == 'free') {
             const anonyname = child.user.lecturePostAnonynames[0].anonyname;
             child['name'] = '익명 ' + anonyname;
             child['profileUrl'] = null;
@@ -138,6 +139,11 @@ export class LectureService {
         });
       });
     }
+    if (result.raw[0]['type'] == 'team' && result.raw[0]['isMe'] == 1) {
+      const resumes = await this.lecturePostRepository.findResumes(lecturePostIdx);
+      post['resumes'] = resumes;
+    }
+
     return post;
   }
   async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: UpdatePostDto): Promise<UpdateResult> {
@@ -218,5 +224,18 @@ export class LectureService {
     }
     const deleteResult = await this.lecturePostCommentRepository.softDelete({ commentIdx });
     return deleteResult;
+  }
+
+  async createResume(userIdx: number, lecturePostIdx: number, body: string): Promise<void> {
+    const post = await this.lecturePostRepository.findOne({ where: { lecturePostIdx }, relations: ['user'] });
+    console.log(post);
+    if (!post) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
+    } else if (post.type != 'team') {
+      return errResponse(baseResponse.WRONG_TYPE_LECTURE_POST);
+    } else if (post.user.userIdx == userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    await this.lecturePostRepository.insertResume({ userIdx }, { lecturePostIdx }, body);
   }
 }
