@@ -26,15 +26,15 @@ export class Lecture {
   grade: number;
   @Column({ type: 'varchar', length: 10 })
   type: string;
-  @Column({ type: 'int' })
-  code: number;
-  @Column({ type: 'int' })
-  classNumber: number;
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 10 })
+  code: string;
+  @Column({ type: 'varchar', length: 10 })
+  classNumber: string;
+  @Column({ type: 'varchar', length: 100 })
   name: string;
   @Column({ type: 'int', unsigned: true })
   credit: string;
-  @Column({ type: 'varchar', length: 10 })
+  @Column({ type: 'varchar', length: 30, nullable: true })
   time: string;
   @Column({ type: 'varchar', length: 20, nullable: true })
   department: string;

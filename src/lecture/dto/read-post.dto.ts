@@ -21,4 +21,7 @@ export class ReadPostDto {
   @IsOptional()
   @IsString()
   readonly cursor: string;
+  @IsOptional()
+  @IsString()
+  readonly keyword: string;
 }

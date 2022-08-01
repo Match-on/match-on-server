@@ -93,8 +93,8 @@ export class LectureService {
 
   async readPosts(lectureIdx: number, query: ReadPostDto): Promise<any> {
     await this.readLecture(lectureIdx);
-    const { type, sort, cursor } = query;
-    const result = await this.lecturePostRepository.findWithQuery(lectureIdx, type, sort, cursor);
+    const { type, sort, cursor, keyword } = query;
+    const result = await this.lecturePostRepository.findWithQuery(lectureIdx, type, sort, cursor, keyword);
     return result;
   }
   async createPost(userIdx: number, lectureIdx: number, createPostData: CreatePostDto): Promise<void> {

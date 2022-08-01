@@ -3,7 +3,7 @@ import { LecturePostHit } from 'src/entity/lecture-post-hit.entity';
 import { LecturePostResume } from 'src/entity/lecture-post-resume.entity';
 import { LecturePost } from 'src/entity/lecture-post.entity';
 import { CreatePostDto } from 'src/lecture/dto/create-post.dto';
-import { createQueryBuilder, EntityRepository, OrderByCondition, Repository } from 'typeorm';
+import { createQueryBuilder, EntityRepository, Like, OrderByCondition, Repository } from 'typeorm';
 
 @EntityRepository(LecturePost)
 export class LecturePostRepository extends Repository<LecturePost> {
@@ -15,7 +15,13 @@ export class LecturePostRepository extends Repository<LecturePost> {
     const result: LecturePost = await this.save(post);
     return result;
   }
-  async findWithQuery(lectureIdx: number, type: string, sort: string, cursor: string): Promise<LecturePost[]> {
+  async findWithQuery(
+    lectureIdx: number,
+    type: string,
+    sort: string,
+    cursor: string,
+    keyword?: string,
+  ): Promise<LecturePost[]> {
     let sortCondition: OrderByCondition = {};
     let cursorOption: string;
     const hitsQb = createQueryBuilder(LecturePostHit, 'lph')
@@ -48,9 +54,13 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .addSelect(cursorOption + ' as `cursor`')
       .orderBy(sortCondition)
       .limit(10);
+    if (!!keyword) {
+      qb.andWhere([{ title: Like(`%${keyword}%`) }, { body: Like(`%${keyword}%`) }]);
+    }
     if (!!cursor) {
       qb.andWhere(cursorOption + ' < ' + `'${cursor}'`);
     }
+
     const posts = qb.getRawMany();
     return posts;
   }
