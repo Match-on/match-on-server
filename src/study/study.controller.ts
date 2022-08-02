@@ -67,7 +67,6 @@ export class StudyController {
     )
     query: ReadStudyDto,
   ): Promise<object> {
-    console.log(query);
     const posts = await this.studyService.readStudies(query);
     return response(baseResponse.SUCCESS, posts);
   }

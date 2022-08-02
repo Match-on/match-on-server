@@ -40,7 +40,7 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   WRONG_TYPE_LECTURE_POST:{ "isSuccess": false, "code": 3014, "message": "잘못된 유형의 게시글입니다." },
   
   NOT_EXIST_STUDY: { "isSuccess": false, "code": 3015, "message": "존재하지 않는 스터디입니다." },
-  NOT_EXIST_STUDY_COMMENT: { "isSuccess": false, "code": 3015, "message": "존재하지 않는 댓글입니다." },
+  NOT_EXIST_STUDY_COMMENT: { "isSuccess": false, "code": 3016, "message": "존재하지 않는 댓글입니다." },
 
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },

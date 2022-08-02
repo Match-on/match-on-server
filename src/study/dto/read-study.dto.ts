@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 enum Sort {
   LATEST = 'latest',
@@ -9,9 +9,8 @@ enum Sort {
 export class ReadStudyDto {
   @IsOptional()
   @Type(() => Number)
-  @IsArray()
   @IsNumber({}, { each: true })
-  readonly categoryIdx?: number[];
+  readonly categoryIdx?: number[] | number;
   @IsOptional()
   @IsNumber()
   @Type(() => Number)

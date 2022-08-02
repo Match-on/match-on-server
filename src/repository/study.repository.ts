@@ -47,11 +47,11 @@ export class StudyRepository extends Repository<Study> {
     return result;
   }
   async findWithQuery(
-    categoryIdx: number[],
-    regionIdx: number,
     sort: string,
     cursor: string,
     keyword?: string,
+    categoryIdx?: number[],
+    regionIdx?: number,
   ): Promise<Study[]> {
     let sortCondition: OrderByCondition = {};
     let cursorOption: string;
@@ -69,11 +69,17 @@ export class StudyRepository extends Repository<Study> {
       sortCondition['s.studyIdx'] = 'DESC';
       cursorOption = `CONCAT(LPAD(${key}, 8, '0'), LPAD(studyIdx, 8, '0'))`;
     }
-
+    const whereCondition = {};
+    if (!!categoryIdx) {
+      whereCondition['category'] = In(categoryIdx);
+    }
+    if (!!regionIdx) {
+      whereCondition['region'] = regionIdx;
+    }
     const qb = await this.createQueryBuilder('s')
       .leftJoin('s.category', 'c')
       .leftJoin('s.region', 'r')
-      .where({ category: In(categoryIdx), region: regionIdx })
+      .where(whereCondition)
       .select(['studyIdx', 'title', 'left(body, 100) as body', 'r.region as region', 'c.category as category', 'count'])
       .addSelect(`(${hitsQb.getQuery()}) as hitCount`)
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)

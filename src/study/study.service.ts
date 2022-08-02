@@ -28,6 +28,7 @@ export class StudyService {
   }
 
   async createFavorite(userIdx: number, studyIdx: number): Promise<void> {
+    await this.checkStudy(studyIdx);
     await this.studyRepository.upsertFavorite(userIdx, studyIdx);
   }
 
@@ -42,7 +43,13 @@ export class StudyService {
 
   async readStudies(query: ReadStudyDto): Promise<any> {
     const { categoryIdx, regionIdx, sort, cursor, keyword } = query;
-    const result = await this.studyRepository.findWithQuery(categoryIdx, regionIdx, sort, cursor, keyword);
+    let category: Array<number>;
+    if (typeof categoryIdx == 'number') {
+      category = [categoryIdx];
+    } else {
+      category = categoryIdx;
+    }
+    const result = await this.studyRepository.findWithQuery(sort, cursor, keyword, category, regionIdx);
     return result;
   }
   async createStudy(userIdx: number, categoryIdx: number, regionIdx: number, createStudyData: any): Promise<void> {
@@ -90,14 +97,8 @@ export class StudyService {
     regionIdx: number,
     updateStudyData: any,
   ): Promise<UpdateResult> {
-    const study = await this.studyRepository
-      .createQueryBuilder()
-      .where({ studyIdx })
-      .select('userUserIdx', 'userIdx')
-      .getRawOne();
-    if (!study) {
-      return errResponse(baseResponse.NOT_EXIST_STUDY);
-    } else if (study.userIdx != userIdx) {
+    const study = await this.checkStudy(studyIdx);
+    if (study.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     if (!!categoryIdx) {
@@ -110,6 +111,14 @@ export class StudyService {
     return updateResult;
   }
   async deleteStudy(userIdx: number, studyIdx: number): Promise<DeleteResult> {
+    const study = await this.checkStudy(studyIdx);
+    if (study.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.studyRepository.softDelete({ studyIdx });
+    return deleteResult;
+  }
+  async checkStudy(studyIdx: number): Promise<{ userIdx: number }> {
     const study = await this.studyRepository
       .createQueryBuilder()
       .where({ studyIdx })
@@ -117,44 +126,45 @@ export class StudyService {
       .getRawOne();
     if (!study) {
       return errResponse(baseResponse.NOT_EXIST_STUDY);
-    } else if (study.userIdx != userIdx) {
-      return errResponse(baseResponse.ACCESS_DENIED);
     }
-    const deleteResult = await this.studyRepository.softDelete({ studyIdx });
-    return deleteResult;
+    return study;
   }
-
   async createStudyHit(userIdx: number, studyIdx: number): Promise<void> {
     const today = new Date();
     await this.studyRepository.upsertStudyHit(userIdx, studyIdx, today.toISOString().substring(0, 10));
   }
 
-  async createComment(userIdx: number, studyIdx: number, comment: string, parentIdx: number): Promise<void> {
-    await this.studyCommentRepository.insertComment({ userIdx }, { studyIdx }, { comment }, { commentIdx: parentIdx });
-  }
-  async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
-    const result = await this.studyCommentRepository
+  async checkComment(commentIdx: number): Promise<{ userIdx: number }> {
+    const comment = await this.studyCommentRepository
       .createQueryBuilder()
       .where({ commentIdx })
       .select('userUserIdx', 'userIdx')
       .getRawOne();
-    if (!result) {
+    if (!comment) {
       return errResponse(baseResponse.NOT_EXIST_STUDY_COMMENT);
-    } else if (result.userIdx != userIdx) {
+    }
+    return comment;
+  }
+
+  async createComment(userIdx: number, studyIdx: number, comment: string, parentIdx: number): Promise<void> {
+    await this.checkStudy(studyIdx);
+    if (parentIdx) {
+      await this.checkComment(parentIdx);
+    }
+
+    await this.studyCommentRepository.insertComment({ userIdx }, { studyIdx }, { comment }, { commentIdx: parentIdx });
+  }
+  async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkComment(commentIdx);
+    if (result.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const updateResult = await this.studyCommentRepository.update(commentIdx, { comment });
     return updateResult;
   }
   async deleteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
-    const result = await this.studyCommentRepository
-      .createQueryBuilder()
-      .where({ commentIdx })
-      .select('userUserIdx', 'userIdx')
-      .getRawOne();
-    if (!result) {
-      return errResponse(baseResponse.NOT_EXIST_STUDY_COMMENT);
-    } else if (result.userIdx != userIdx) {
+    const result = await this.checkComment(commentIdx);
+    if (result.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const deleteResult = await this.studyCommentRepository.softDelete({ commentIdx });
