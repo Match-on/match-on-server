@@ -151,20 +151,23 @@ export class LectureService {
     return post;
   }
   async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: UpdatePostDto): Promise<UpdateResult> {
-    const post = await this.lecturePostRepository
-      .createQueryBuilder()
-      .where({ lecturePostIdx })
-      .select('userUserIdx', 'userIdx')
-      .getRawOne();
-    if (!post) {
-      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
-    } else if (post.userIdx != userIdx) {
+    const post = await this.checkPost(lecturePostIdx);
+    if (post.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const updateResult = await this.lecturePostRepository.update(lecturePostIdx, updatePostData);
     return updateResult;
   }
   async deletePost(userIdx: number, lecturePostIdx: number): Promise<DeleteResult> {
+    const post = await this.checkPost(lecturePostIdx);
+    if (post.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.lecturePostRepository.softDelete({ lecturePostIdx });
+    return deleteResult;
+  }
+
+  async checkPost(lecturePostIdx: number): Promise<{ userIdx: number }> {
     const post = await this.lecturePostRepository
       .createQueryBuilder()
       .where({ lecturePostIdx })
@@ -172,11 +175,8 @@ export class LectureService {
       .getRawOne();
     if (!post) {
       return errResponse(baseResponse.NOT_EXIST_LECTURE_POST);
-    } else if (post.userIdx != userIdx) {
-      return errResponse(baseResponse.ACCESS_DENIED);
     }
-    const deleteResult = await this.lecturePostRepository.softDelete({ lecturePostIdx });
-    return deleteResult;
+    return post;
   }
 
   async createPostHit(userIdx: number, lecturePostIdx: number): Promise<void> {
@@ -189,8 +189,13 @@ export class LectureService {
     lecturePostIdx: number,
     type: string,
     comment: string,
-    parentIdx: number,
+    parentIdx?: number,
   ): Promise<void> {
+    await this.checkPost(lecturePostIdx);
+    if (parentIdx) {
+      await this.checkComment(parentIdx);
+    }
+
     if (type == 'free') {
       await this.lecturePostCommentRepository.insertAnonyname(userIdx, lecturePostIdx);
     }
@@ -202,32 +207,32 @@ export class LectureService {
     );
   }
   async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
-    const post = await this.lecturePostCommentRepository
-      .createQueryBuilder()
-      .where({ commentIdx })
-      .select('userUserIdx', 'userIdx')
-      .getRawOne();
-    if (!post) {
-      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST_COMMENT);
-    } else if (post.userIdx != userIdx) {
+    const checkResult = await this.checkComment(commentIdx);
+    if (checkResult.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const updateResult = await this.lecturePostCommentRepository.update(commentIdx, { comment });
     return updateResult;
   }
   async deleteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
-    const post = await this.lecturePostCommentRepository
-      .createQueryBuilder()
-      .where({ commentIdx })
-      .select('userUserIdx', 'userIdx')
-      .getRawOne();
-    if (!post) {
-      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST_COMMENT);
-    } else if (post.userIdx != userIdx) {
+    const checkResult = await this.checkComment(commentIdx);
+    if (checkResult.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const deleteResult = await this.lecturePostCommentRepository.softDelete({ commentIdx });
     return deleteResult;
+  }
+
+  async checkComment(commentIdx: number): Promise<{ userIdx: number }> {
+    const comment = await this.lecturePostCommentRepository
+      .createQueryBuilder()
+      .where({ commentIdx })
+      .select('userUserIdx', 'userIdx')
+      .getRawOne();
+    if (!comment) {
+      return errResponse(baseResponse.NOT_EXIST_LECTURE_POST_COMMENT);
+    }
+    return comment;
   }
 
   async createResume(userIdx: number, lecturePostIdx: number, body: string): Promise<void> {
