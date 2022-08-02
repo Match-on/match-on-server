@@ -113,13 +113,15 @@ export class LectureService {
     await this.createPostHit(userIdx, lecturePostIdx);
 
     let post: any = result.entities[0];
-    const { writer, profileUrl, hitCount, commentCount, isMe } = result.raw[0];
+    const { writerIdx, writer, profileUrl, hitCount, commentCount, isMe } = result.raw[0];
     post = { writer, profileUrl, hitCount, commentCount, isMe, ...post };
     if (!!post.comments) {
       post.comments.forEach((comment) => {
+        comment['isMe'] = comment.user.userIdx == userIdx ? '1' : '0';
+        comment['isWriter'] = comment.user.userIdx == writerIdx ? '1' : '0';
         if (result.raw[0]['type'] == 'free') {
           const anonyname = comment.user.lecturePostAnonynames[0].anonyname;
-          comment['name'] = '익명 ' + anonyname;
+          comment['name'] = comment.isWriter == '1' ? '글쓴이' : '익명 ' + anonyname;
           comment['profileUrl'] = null;
         } else {
           comment['name'] = comment.user.nickname;
@@ -127,9 +129,11 @@ export class LectureService {
         }
         delete comment['user'];
         comment.childComments.forEach((child) => {
+          child['isMe'] = child.user.userIdx == userIdx ? '1' : '0';
+          child['isWriter'] = child.user.userIdx == writerIdx ? '1' : '0';
           if (result.raw[0]['type'] == 'free') {
             const anonyname = child.user.lecturePostAnonynames[0].anonyname;
-            child['name'] = '익명 ' + anonyname;
+            child['name'] = child.isWriter == '1' ? '글쓴이' : '익명 ' + anonyname;
             child['profileUrl'] = null;
           } else {
             child['name'] = child.user.nickname;

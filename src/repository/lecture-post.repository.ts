@@ -82,6 +82,7 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .leftJoin('ccu.lecturePostAnonynames', 'cca', `cca.postLecturePostIdx = ${lecturePostIdx}`)
       .where({ lecturePostIdx })
       .select([
+        'u.userIdx as writerIdx',
         'lp.lecturePostIdx',
         'lp.title',
         'lp.body',
@@ -89,12 +90,14 @@ export class LecturePostRepository extends Repository<LecturePost> {
         'pc.commentIdx',
         'pc.comment',
         'pc.createdAt',
+        'pcu.userIdx',
         'pcu.nickname',
         'pcu.profileUrl',
         'pca.anonyname',
         'cc.commentIdx',
         'cc.comment',
         'cc.createdAt',
+        'ccu.userIdx',
         'ccu.nickname',
         'ccu.profileUrl',
         'cca.anonyname',
