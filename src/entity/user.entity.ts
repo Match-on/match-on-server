@@ -23,6 +23,10 @@ import { LecturePostHit } from './lecture-post-hit.entity';
 import { LecturePostComment } from './lecture-post-comment.entity';
 import { LecturePostAnonyname } from './lecture-post-anonyname.entity';
 import { LecturePostResume } from './lecture-post-resume.entity';
+import { Study } from './study.entity';
+import { StudyHit } from './study-hit.entity';
+import { StudyComment } from './study-comment.entity';
+import { StudyResume } from './study-resume.entity';
 
 @Entity()
 export class User {
@@ -85,6 +89,18 @@ export class User {
   lecturePostAnonynames: LecturePostAnonyname[];
   @OneToMany(() => LecturePostResume, (resume) => resume.user)
   lecturePostResumes: LecturePostResume[];
+
+  @OneToMany(() => Study, (post) => post.user)
+  studies: Study[];
+  @ManyToMany(() => Study, (study) => study.favorites)
+  @JoinTable({ name: 'favorite_study' })
+  favoritStudies: Study[];
+  @OneToMany(() => StudyHit, (hit) => hit.user)
+  studyHits: StudyHit[];
+  @OneToMany(() => StudyComment, (comment) => comment.user)
+  studyComments: StudyComment[];
+  @OneToMany(() => StudyResume, (resume) => resume.user)
+  studyResumes: StudyResume[];
 
   @BeforeInsert()
   @BeforeUpdate()

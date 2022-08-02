@@ -10,6 +10,7 @@ import { TeamModule } from './team/team.module';
 import { UnivModule } from './univ/univ.module';
 import { EmailModule } from './email/email.module';
 import { LectureModule } from './lecture/lecture.module';
+import { StudyModule } from './study/study.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { LectureModule } from './lecture/lecture.module';
     UnivModule,
     EmailModule,
     LectureModule,
+    StudyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
