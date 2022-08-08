@@ -4,10 +4,13 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { NoteTask } from './note-task.entity';
+import { Note } from './note.entity';
 import { Team } from './team.entity';
 import { User } from './user.entity';
 
@@ -36,4 +39,9 @@ export class Member {
   updatedAt: Date;
   @DeleteDateColumn({ type: 'timestamp' })
   deletedAt: Date | null;
+
+  @OneToMany(() => Note, (note) => note.member)
+  notes: Note[];
+  @OneToMany(() => NoteTask, (noteTask) => noteTask.member)
+  noteTasks: NoteTask[];
 }

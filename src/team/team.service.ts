@@ -10,6 +10,7 @@ import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { UpdateMemeberDto } from './dto/update-member.dto';
+import { Note } from 'src/entity/note.entity';
 
 @Injectable()
 export class TeamService {
@@ -93,12 +94,39 @@ export class TeamService {
   }
 
   async readMemberByIdx(memberIdx: number): Promise<any> {
-    const result = await this.memberRepository
+    const member = await this.memberRepository
       .createQueryBuilder()
       .where({ memberIdx })
       .select(['userUserIdx as userIdx', 'teamTeamIdx as teamIdx', 'status', 'deletedAt'])
       .getRawOne();
-    return result;
+    if (!member || member.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_MEMBER);
+    }
+    return member;
+  }
+
+  async readMemberWithoutIdx(userIdx: number, teamIdx: number): Promise<any> {
+    const member = await this.memberRepository
+      .createQueryBuilder('m')
+      .where({ user: { userIdx }, team: { teamIdx } })
+      .select(['m.memberIdx', 'm.status'])
+      .getOne();
+    if (!member || member.status != 'Y') {
+      return errResponse(baseResponse.NOT_EXIST_MEMBER);
+    }
+    return member;
+  }
+
+  async checkMember(memberIdx: number, teamIdx: number): Promise<any> {
+    const member = await this.memberRepository
+      .createQueryBuilder('m')
+      .where({ memberIdx: memberIdx, team: { teamIdx } })
+      .select(['m.memberIdx', 'm.status'])
+      .getOne();
+    if (!member || member.status != 'Y') {
+      return errResponse(baseResponse.NOT_TEAM_MEMBER);
+    }
+    return member;
   }
 
   async updateMember(memberIdx: number, updateMemberData: UpdateMemeberDto): Promise<UpdateResult> {
@@ -120,5 +148,23 @@ export class TeamService {
   async deleteFavorite(userIdx: number, teamIdx: number): Promise<void> {
     await this.readTeam(teamIdx);
     await this.teamRepository.deleteFavorite(userIdx, teamIdx);
+  }
+
+  async createNote(
+    userIdx: number,
+    teamIdx: number,
+    data: { title: string; body: string },
+    files?: any[],
+    tasks?: any[],
+  ): Promise<Note> {
+    await this.readTeam(teamIdx);
+    const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+    if (tasks) {
+      for (let i = 0; i < tasks.length; i++) {
+        await this.checkMember(tasks[i].member.memberIdx, teamIdx);
+      }
+    }
+    const result = await this.teamRepository.insertNote(writer, { teamIdx }, data, files, tasks);
+    return result;
   }
 }

@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Member } from './member.entity';
+import { Note } from './note.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -41,4 +42,7 @@ export class Team {
 
   @ManyToMany(() => User, (user) => user.favoritTeams)
   favorites: User[];
+
+  @OneToMany(() => Note, (note) => note.team)
+  notes: Note[];
 }

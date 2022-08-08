@@ -5,6 +5,7 @@ import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
+import { CreateNoteDto } from './dto/create-note.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
@@ -168,6 +169,26 @@ export class TeamController {
   @Delete('/favorites/:teamIdx')
   async deleteFavorite(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
     await this.teamService.deleteFavorite(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/notes')
+  async postNote(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createNoteData: CreateNoteDto,
+  ): Promise<object> {
+    const { files, tasks, ...data } = createNoteData;
+    const fileData = [];
+    const taskData = [];
+    files?.forEach((url) => {
+      fileData.push({ url });
+    });
+    tasks?.forEach((task) => {
+      taskData.push({ member: { memberIdx: task.memberIdx }, description: task.description });
+    });
+    await this.teamService.createNote(user.userIdx, teamIdx, data, fileData, taskData);
     return response(baseResponse.SUCCESS);
   }
 }

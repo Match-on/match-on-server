@@ -1,12 +1,25 @@
+import { Member } from 'src/entity/member.entity';
+import { Note } from 'src/entity/note.entity';
 import { Team } from 'src/entity/team.entity';
 import { CreateTeamDto } from 'src/team/dto/create-team.dto';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, getRepository, Repository } from 'typeorm';
 
 @EntityRepository(Team)
 export class TeamRepository extends Repository<Team> {
   async insertTeam(createTeamDto: CreateTeamDto): Promise<Team> {
     const team: Team = this.create(createTeamDto);
     const result: Team = await this.save(team);
+    return result;
+  }
+
+  async insertNote(member: Member, team: any, data: object, files: any[], tasks: any[]): Promise<Note> {
+    const noteRepository = getRepository(Note);
+    const note: Note = noteRepository.create(data);
+    note.member = member;
+    note.team = team;
+    note.files = files;
+    note.tasks = tasks;
+    const result: Note = await noteRepository.save(note);
     return result;
   }
 
