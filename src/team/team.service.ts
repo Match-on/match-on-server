@@ -11,6 +11,7 @@ import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { Note } from 'src/entity/note.entity';
+import { Member } from 'src/entity/member.entity';
 
 @Injectable()
 export class TeamService {
@@ -105,7 +106,7 @@ export class TeamService {
     return member;
   }
 
-  async readMemberWithoutIdx(userIdx: number, teamIdx: number): Promise<any> {
+  async readMemberWithoutIdx(userIdx: number, teamIdx: number): Promise<Member> {
     const member = await this.memberRepository
       .createQueryBuilder('m')
       .where({ user: { userIdx }, team: { teamIdx } })
@@ -165,6 +166,17 @@ export class TeamService {
       }
     }
     const result = await this.teamRepository.insertNote(writer, { teamIdx }, data, files, tasks);
+    return result;
+  }
+
+  async readNotes(userIdx: number, teamIdx: number): Promise<Note> {
+    await this.readTeam(teamIdx);
+    const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.teamRepository.findNotes(teamIdx, viewer.memberIdx);
+    result?.forEach((r) => {
+      r.files = r.files?.split(',') || [];
+    });
     return result;
   }
 }

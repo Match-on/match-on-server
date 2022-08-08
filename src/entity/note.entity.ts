@@ -3,6 +3,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -12,6 +14,7 @@ import { Team } from './team.entity';
 import { Member } from './member.entity';
 import { NoteTask } from './note-task.entity';
 import { NoteFile } from './note-file.entity';
+import { NoteComment } from './note-comment.entity';
 
 @Entity()
 export class Note {
@@ -40,4 +43,10 @@ export class Note {
   tasks: NoteTask[];
   @OneToMany(() => NoteFile, (file) => file.note, { cascade: true })
   files: NoteFile[];
+
+  @OneToMany(() => NoteComment, (comment) => comment.note)
+  comments: NoteComment[];
+  @ManyToMany(() => Member, (member) => member.noteHits)
+  @JoinTable({ name: 'note_hit' })
+  hits: Member[];
 }

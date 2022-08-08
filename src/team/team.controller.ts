@@ -191,4 +191,11 @@ export class TeamController {
     await this.teamService.createNote(user.userIdx, teamIdx, data, fileData, taskData);
     return response(baseResponse.SUCCESS);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/notes')
+  async getNotes(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    const result = await this.teamService.readNotes(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
 }

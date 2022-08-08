@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { NoteComment } from './note-comment.entity';
 import { NoteTask } from './note-task.entity';
 import { Note } from './note.entity';
 import { Team } from './team.entity';
@@ -44,4 +46,9 @@ export class Member {
   notes: Note[];
   @OneToMany(() => NoteTask, (noteTask) => noteTask.member)
   noteTasks: NoteTask[];
+
+  @OneToMany(() => NoteComment, (comment) => comment.member)
+  noteComments: NoteComment[];
+  @ManyToMany(() => Note, (note) => note.hits)
+  noteHits: Note[];
 }
