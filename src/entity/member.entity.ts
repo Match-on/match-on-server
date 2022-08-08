@@ -25,7 +25,8 @@ export class Member {
   user: User;
   @ManyToOne(() => Team, (team) => team.members, { createForeignKeyConstraints: false })
   team: Team;
-
+  @Column({ type: 'text', nullable: true })
+  profileUrl: string;
   @Column({ type: 'varchar', length: 10, default: '팀원' })
   role: string;
   @Column({ type: 'varchar', length: 20 })

@@ -104,4 +104,26 @@ export class TeamRepository extends Repository<Team> {
       .getRawMany();
     return notes;
   }
+
+  async findNote(noteIdx: number): Promise<any> {
+    const notes = createQueryBuilder(Note, 'n')
+      .where({ noteIdx })
+      .leftJoin('n.member', 'm')
+      .leftJoin('n.tasks', 't')
+      .leftJoin('n.files', 'f')
+      .leftJoin('t.member', 'tm')
+      .select([
+        'n.noteIdx',
+        'n.title ',
+        'n.body',
+        'n.createdAt',
+        'm.name',
+        'f.url',
+        'tm.name',
+        'tm.profileUrl',
+        't.description',
+      ])
+      .getRawAndEntities();
+    return notes;
+  }
 }

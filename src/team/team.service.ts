@@ -179,4 +179,10 @@ export class TeamService {
     });
     return result;
   }
+
+  async readNote(noteIdx: number): Promise<Note> {
+    const result = await this.teamRepository.findNote(noteIdx);
+
+    return result;
+  }
 }
