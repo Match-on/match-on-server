@@ -8,6 +8,7 @@ import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { CreateVoteDto } from './dto/create-vote.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamService } from './team.service';
@@ -204,5 +205,16 @@ export class TeamController {
   async getNote(@User() user: any, @Param('noteIdx', ParseIntPipe) noteIdx: number): Promise<object> {
     const result = await this.teamService.readNote(noteIdx);
     return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/votes')
+  async postVote(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createVoteData: CreateVoteDto,
+  ): Promise<object> {
+    await this.teamService.createVote(user.userIdx, teamIdx, createVoteData);
+    return response(baseResponse.SUCCESS);
   }
 }

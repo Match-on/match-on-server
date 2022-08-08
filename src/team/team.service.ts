@@ -12,12 +12,16 @@ import { baseResponse } from 'src/config/baseResponseStatus';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { Note } from 'src/entity/note.entity';
 import { Member } from 'src/entity/member.entity';
+import { CreateVoteDto } from './dto/create-vote.dto';
+import { VoteRepository } from 'src/repository/vote.repository';
+import { Vote } from 'src/entity/vote.entity';
 
 @Injectable()
 export class TeamService {
   constructor(
     @InjectRepository(TeamRepository) private teamRepository: TeamRepository,
     @InjectRepository(MemberRepository) private memberRepository: MemberRepository,
+    @InjectRepository(VoteRepository) private voteRepository: VoteRepository,
     private userService: UserService,
   ) {}
 
@@ -168,7 +172,6 @@ export class TeamService {
     const result = await this.teamRepository.insertNote(writer, { teamIdx }, data, files, tasks);
     return result;
   }
-
   async readNotes(userIdx: number, teamIdx: number): Promise<Note> {
     await this.readTeam(teamIdx);
     const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
@@ -179,10 +182,17 @@ export class TeamService {
     });
     return result;
   }
-
   async readNote(noteIdx: number): Promise<Note> {
     const result = await this.teamRepository.findNote(noteIdx);
 
+    return result;
+  }
+
+  async createVote(userIdx: number, teamIdx: number, createVoteData: CreateVoteDto): Promise<Vote> {
+    await this.readTeam(teamIdx);
+    const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.voteRepository.insertVote(writer, { teamIdx }, createVoteData);
     return result;
   }
 }

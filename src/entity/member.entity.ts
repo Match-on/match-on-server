@@ -15,6 +15,9 @@ import { NoteTask } from './note-task.entity';
 import { Note } from './note.entity';
 import { Team } from './team.entity';
 import { User } from './user.entity';
+import { VoteChoice } from './vote-choice.entity';
+import { VoteComment } from './vote-comment.entity';
+import { Vote } from './vote.entity';
 
 @Entity()
 @Unique(['user', 'team'])
@@ -52,4 +55,11 @@ export class Member {
   noteComments: NoteComment[];
   @ManyToMany(() => Note, (note) => note.hits)
   noteHits: Note[];
+
+  @OneToMany(() => VoteComment, (comment) => comment.member)
+  voteComments: VoteComment[];
+  @ManyToMany(() => Vote, (vote) => vote.hits)
+  voteHits: Vote[];
+  @ManyToMany(() => VoteChoice, (choice) => choice.member)
+  voteChoices: VoteChoice[];
 }
