@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -31,5 +32,6 @@ export class VoteChoice {
   @ManyToOne(() => Vote, (vote) => vote.choices)
   vote: Vote;
   @ManyToMany(() => Member, (choice) => choice.voteChoices)
+  @JoinTable({ name: 'vote_choice_member' })
   member: Member[];
 }

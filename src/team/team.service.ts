@@ -15,6 +15,7 @@ import { Member } from 'src/entity/member.entity';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { VoteRepository } from 'src/repository/vote.repository';
 import { Vote } from 'src/entity/vote.entity';
+import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 
 @Injectable()
 export class TeamService {
@@ -193,6 +194,35 @@ export class TeamService {
     const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
 
     const result = await this.voteRepository.insertVote(writer, { teamIdx }, createVoteData);
+    return result;
+  }
+
+  async checkVote(voteIdx: number, option?: object): Promise<Vote> {
+    const vote = await this.voteRepository.findOne(voteIdx, option);
+    if (!vote) {
+      return errResponse(baseResponse.NOT_EXIST_VOTE);
+    }
+    return vote;
+  }
+
+  async createVoteChoice(userIdx: number, voteIdx: number, createVoteChoiceData: CreateVoteChoiceDto): Promise<void> {
+    const vote = await this.checkVote(voteIdx, { relations: ['team', 'choices'] });
+    const voter = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
+
+    if (!vote.isMultiple && createVoteChoiceData.choices.length > 1) {
+      return errResponse(baseResponse.NOT_MULTIPLE_VOTE);
+    }
+    const choiceSet = new Set<number>();
+    vote.choices.forEach((choice) => {
+      choiceSet.add(choice.choiceIdx);
+    });
+    createVoteChoiceData.choices.forEach((choice: number) => {
+      if (!choiceSet.has(choice)) {
+        return errResponse(baseResponse.NOT_EXIST_VOTE_CHOICE);
+      }
+    });
+    await this.voteRepository.deleteVoteChoice(voter.memberIdx, Array.from<number>(choiceSet));
+    const result = await this.voteRepository.insertVoteChoice(voter.memberIdx, createVoteChoiceData.choices);
     return result;
   }
 }

@@ -8,6 +8,7 @@ import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
@@ -215,6 +216,17 @@ export class TeamController {
     @Body() createVoteData: CreateVoteDto,
   ): Promise<object> {
     await this.teamService.createVote(user.userIdx, teamIdx, createVoteData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/votes/:voteIdx/choices')
+  async postVoteChoice(
+    @User() user: any,
+    @Param('voteIdx', ParseIntPipe) voteIdx: number,
+    @Body() createVoteChoiceData: CreateVoteChoiceDto,
+  ): Promise<object> {
+    await this.teamService.createVoteChoice(user.userIdx, voteIdx, createVoteChoiceData);
     return response(baseResponse.SUCCESS);
   }
 }
