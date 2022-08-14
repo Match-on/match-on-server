@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
@@ -10,6 +11,7 @@ import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamService } from './team.service';
@@ -227,6 +229,34 @@ export class TeamController {
     @Body() createVoteChoiceData: CreateVoteChoiceDto,
   ): Promise<object> {
     await this.teamService.createVoteChoice(user.userIdx, voteIdx, createVoteChoiceData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/votes/:voteIdx/comments')
+  async postComment(
+    @User() user: any,
+    @Param('voteIdx', ParseIntPipe) voteIdx: number,
+    @Body() createCommentData: CreateCommentDto,
+  ): Promise<object> {
+    const { comment, parentIdx } = createCommentData;
+    await this.teamService.createComment(user.userIdx, voteIdx, comment, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/votes/comments/:commentIdx')
+  async patchComment(
+    @User() user: any,
+    @Param('commentIdx', ParseIntPipe) commentIdx: number,
+    @Body() updateCommentData: UpdateCommentDto,
+  ): Promise<object> {
+    await this.teamService.updateComment(user.userIdx, commentIdx, updateCommentData.comment);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/votes/comments/:commentIdx')
+  async deleteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.teamService.deleteComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
 }

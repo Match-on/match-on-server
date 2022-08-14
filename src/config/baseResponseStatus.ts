@@ -47,6 +47,7 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   NOT_EXIST_VOTE: { "isSuccess": false, "code": 3018, "message": "존재하지 않는 투표입니다." },
   NOT_EXIST_VOTE_CHOICE: { "isSuccess": false, "code": 3019, "message": "존재하지 않는 선택지입니다." },
   NOT_MULTIPLE_VOTE: { "isSuccess": false, "code": 3020, "message": "중복선택이 불가능한 투표입니다." },
+  NOT_EXIST_VOTE_COMMENT: { "isSuccess": false, "code": 3021, "message": "존재하지 않는 댓글입니다." },
 
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },

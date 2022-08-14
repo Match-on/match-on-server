@@ -31,7 +31,7 @@ export class VoteChoice {
 
   @ManyToOne(() => Vote, (vote) => vote.choices)
   vote: Vote;
-  @ManyToMany(() => Member, (choice) => choice.voteChoices)
+  @ManyToMany(() => Member, (member) => member.voteChoices)
   @JoinTable({ name: 'vote_choice_member' })
   member: Member[];
 }

@@ -18,7 +18,7 @@ import { VoteChoice } from './vote-choice.entity';
 @Entity()
 export class Vote {
   @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
-  vote: number;
+  voteIdx: number;
 
   @Column({ type: 'varchar', length: 100 })
   title: string;

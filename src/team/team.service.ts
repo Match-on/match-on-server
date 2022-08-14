@@ -13,7 +13,7 @@ import { UpdateMemeberDto } from './dto/update-member.dto';
 import { Note } from 'src/entity/note.entity';
 import { Member } from 'src/entity/member.entity';
 import { CreateVoteDto } from './dto/create-vote.dto';
-import { VoteRepository } from 'src/repository/vote.repository';
+import { VoteCommentRepository, VoteRepository } from 'src/repository/vote.repository';
 import { Vote } from 'src/entity/vote.entity';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 
@@ -23,6 +23,7 @@ export class TeamService {
     @InjectRepository(TeamRepository) private teamRepository: TeamRepository,
     @InjectRepository(MemberRepository) private memberRepository: MemberRepository,
     @InjectRepository(VoteRepository) private voteRepository: VoteRepository,
+    @InjectRepository(VoteCommentRepository) private voteCommentRepository: VoteCommentRepository,
     private userService: UserService,
   ) {}
 
@@ -224,5 +225,41 @@ export class TeamService {
     await this.voteRepository.deleteVoteChoice(voter.memberIdx, Array.from<number>(choiceSet));
     const result = await this.voteRepository.insertVoteChoice(voter.memberIdx, createVoteChoiceData.choices);
     return result;
+  }
+
+  async checkComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
+    const comment = await this.voteCommentRepository.findComment(commentIdx);
+    if (!comment) {
+      return errResponse(baseResponse.NOT_EXIST_VOTE_COMMENT);
+    }
+    return comment;
+  }
+
+  async createComment(userIdx: number, voteIdx: number, comment: string, parentIdx: number): Promise<void> {
+    const vote = await this.checkVote(voteIdx, { relations: ['team', 'choices'] });
+    const writer = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
+
+    if (parentIdx) {
+      await this.checkComment(parentIdx);
+    }
+
+    await this.voteCommentRepository.insertComment(writer, vote, { comment }, { commentIdx: parentIdx });
+  }
+
+  async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.voteCommentRepository.update(commentIdx, { comment });
+    return updateResult;
+  }
+  async deleteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const result = await this.checkComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.voteCommentRepository.softDelete({ commentIdx });
+    return deleteResult;
   }
 }
