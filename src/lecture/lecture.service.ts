@@ -10,7 +10,6 @@ import { UserService } from 'src/user/user.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ReadPostDto } from './dto/read-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class LectureService {
@@ -150,7 +149,7 @@ export class LectureService {
 
     return post;
   }
-  async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: UpdatePostDto): Promise<UpdateResult> {
+  async updatePost(userIdx: number, lecturePostIdx: number, updatePostData: any): Promise<UpdateResult> {
     const post = await this.checkPost(lecturePostIdx);
     if (post.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);

@@ -14,5 +14,6 @@ import { LecturePostCommentRepository } from 'src/repository/lecture-post-commen
   ],
   providers: [LectureService],
   controllers: [LectureController],
+  exports: [LectureService],
 })
 export class LectureModule {}

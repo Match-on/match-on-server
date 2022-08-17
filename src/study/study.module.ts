@@ -10,5 +10,6 @@ import { StudyService } from './study.service';
   imports: [TypeOrmModule.forFeature([StudyRepository, StudyCommentRepository]), UserModule],
   controllers: [StudyController],
   providers: [StudyService],
+  exports: [StudyService],
 })
 export class StudyModule {}

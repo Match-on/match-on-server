@@ -70,8 +70,8 @@ export class StudyService {
     await this.createStudyHit(userIdx, studyIdx);
 
     let study: any = result.entities[0];
-    const { writerIdx, hitCount, commentCount, isMe, category, region, isLike } = result.raw[0];
-    study = { hitCount, commentCount, isMe, category, region, isLike, ...study };
+    const { writerIdx, hitCount, commentCount, isMe, category, region, isLike, isRecruiting } = result.raw[0];
+    study = { hitCount, commentCount, isMe, category, region, isLike, isRecruiting, ...study };
     if (!!study.comments) {
       study.comments.forEach((comment) => {
         comment['name'] = comment.user.nickname;

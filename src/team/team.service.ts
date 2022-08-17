@@ -16,6 +16,8 @@ import { CreateVoteDto } from './dto/create-vote.dto';
 import { VoteCommentRepository, VoteRepository } from 'src/repository/vote.repository';
 import { Vote } from 'src/entity/vote.entity';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
+import { LectureService } from 'src/lecture/lecture.service';
+import { StudyService } from 'src/study/study.service';
 
 @Injectable()
 export class TeamService {
@@ -25,10 +27,18 @@ export class TeamService {
     @InjectRepository(VoteRepository) private voteRepository: VoteRepository,
     @InjectRepository(VoteCommentRepository) private voteCommentRepository: VoteCommentRepository,
     private userService: UserService,
+    private studyService: StudyService,
+    private lectureService: LectureService,
   ) {}
 
   async createTeam(userIdx: number, createTeamDto: CreateTeamDto, membersIdx: number[]): Promise<Team> {
     createTeamDto.id = Math.random().toString(36).substring(2, 11) + new Date().getTime().toString(36);
+
+    if (createTeamDto.type == '스터디') {
+      await this.studyService.updateStudy(userIdx, createTeamDto.index, null, null, { status: 'D' });
+    } else {
+      await this.lectureService.updatePost(userIdx, createTeamDto.index, { status: 'D' });
+    }
 
     const team = await this.teamRepository.insertTeam(createTeamDto);
     const leader = await this.userService.findOneByIdx(userIdx);
@@ -36,6 +46,7 @@ export class TeamService {
 
     await this.memberRepository.insertMembers(team, members, leader);
     // TODO: 초대메일 로직 추가(메일 수락시 UserTeam.status 'W' => 'Y')
+
     return team;
   }
 

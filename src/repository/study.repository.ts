@@ -113,6 +113,7 @@ export class StudyRepository extends Repository<Study> {
       .select([
         's.studyIdx',
         'u.userIdx as writerIdx',
+        's.count',
         's.title',
         's.body',
         'sr.region as region',
@@ -134,6 +135,7 @@ export class StudyRepository extends Repository<Study> {
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`if(u.userIdx = ${userIdx}, true, false) as isMe`)
       .addSelect(`if(sf.userIdx IS NULL, false, true) as isLike`)
+      .addSelect(`if(s.status = 'Y', true, false) as isRecruiting`)
       .getRawAndEntities();
     return result;
   }
