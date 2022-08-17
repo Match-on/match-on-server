@@ -12,9 +12,9 @@ export class ReadStudyDto {
   @IsNumber({}, { each: true })
   readonly categoryIdx?: number[] | number;
   @IsOptional()
-  @IsNumber()
   @Type(() => Number)
-  readonly regionIdx: number;
+  @IsNumber({}, { each: true })
+  readonly regionIdx: number[] | number;
   @IsNotEmpty()
   @IsEnum(Sort)
   readonly sort: string;

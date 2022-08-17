@@ -51,7 +51,7 @@ export class StudyRepository extends Repository<Study> {
     cursor: string,
     keyword?: string,
     categoryIdx?: number[],
-    regionIdx?: number,
+    regionIdx?: number[],
   ): Promise<Study[]> {
     let sortCondition: OrderByCondition = {};
     let cursorOption: string;
@@ -74,7 +74,7 @@ export class StudyRepository extends Repository<Study> {
       whereCondition['category'] = In(categoryIdx);
     }
     if (!!regionIdx) {
-      whereCondition['region'] = regionIdx;
+      whereCondition['region'] = In(regionIdx);
     }
     const qb = await this.createQueryBuilder('s')
       .leftJoin('s.category', 'c')
@@ -101,7 +101,10 @@ export class StudyRepository extends Repository<Study> {
     const commentQb = createQueryBuilder(StudyComment, 'comment').select('COUNT(*)').where('studyIdx = s.studyIdx');
 
     const result = await this.createQueryBuilder('s')
+      .leftJoin('s.region', 'sr')
+      .leftJoin('s.category', 'sca')
       .leftJoin('s.user', 'u')
+      .leftJoin('s.favorites', 'sf', `sf.userIdx = ${userIdx}`)
       .leftJoin('s.comments', 'sc', 's.studyIdx = sc.post and sc.parentCommentCommentIdx IS NULL')
       .leftJoin('sc.user', 'scu')
       .leftJoin('sc.childComments', 'cc')
@@ -112,6 +115,8 @@ export class StudyRepository extends Repository<Study> {
         'u.userIdx as writerIdx',
         's.title',
         's.body',
+        'sr.region as region',
+        'sca.category as category',
         'sc.commentIdx',
         'sc.comment',
         'sc.createdAt',
@@ -128,6 +133,7 @@ export class StudyRepository extends Repository<Study> {
       .addSelect(`(${hitsQb.getQuery()}) as hitCount`)
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`if(u.userIdx = ${userIdx}, true, false) as isMe`)
+      .addSelect(`if(sf.userIdx IS NULL, false, true) as isLike`)
       .getRawAndEntities();
     return result;
   }

@@ -44,12 +44,18 @@ export class StudyService {
   async readStudies(query: ReadStudyDto): Promise<any> {
     const { categoryIdx, regionIdx, sort, cursor, keyword } = query;
     let category: Array<number>;
+    let region: Array<number>;
     if (typeof categoryIdx == 'number') {
       category = [categoryIdx];
     } else {
       category = categoryIdx;
     }
-    const result = await this.studyRepository.findWithQuery(sort, cursor, keyword, category, regionIdx);
+    if (typeof regionIdx == 'number') {
+      region = [regionIdx];
+    } else {
+      region = regionIdx;
+    }
+    const result = await this.studyRepository.findWithQuery(sort, cursor, keyword, category, region);
     return result;
   }
   async createStudy(userIdx: number, categoryIdx: number, regionIdx: number, createStudyData: any): Promise<void> {
@@ -64,8 +70,8 @@ export class StudyService {
     await this.createStudyHit(userIdx, studyIdx);
 
     let study: any = result.entities[0];
-    const { writerIdx, hitCount, commentCount, isMe } = result.raw[0];
-    study = { hitCount, commentCount, isMe, ...study };
+    const { writerIdx, hitCount, commentCount, isMe, category, region, isLike } = result.raw[0];
+    study = { hitCount, commentCount, isMe, category, region, isLike, ...study };
     if (!!study.comments) {
       study.comments.forEach((comment) => {
         comment['name'] = comment.user.nickname;
