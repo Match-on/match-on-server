@@ -1,6 +1,7 @@
 import { Member } from 'src/entity/member.entity';
 import { VoteComment } from 'src/entity/vote-comment.entity';
 import { Vote } from 'src/entity/vote.entity';
+import { CreateVoteChoiceDto } from 'src/team/dto/create-vote-choice.dto';
 import { createQueryBuilder, EntityRepository, In, Like, OrderByCondition, Repository } from 'typeorm';
 
 @EntityRepository(Vote)
@@ -99,7 +100,7 @@ export class VoteRepository extends Repository<Vote> {
     return result;
   }
 
-  async insertVoteChoice(memberIdx: number, choices: number[]): Promise<any> {
+  async insertVoteVote(memberIdx: number, choices: number[]): Promise<any> {
     const data = [];
     choices.forEach((choiceIdx) => {
       data.push({ memberMemberIdx: memberIdx, voteChoiceChoiceIdx: choiceIdx });
@@ -108,11 +109,20 @@ export class VoteRepository extends Repository<Vote> {
     return result;
   }
 
-  async deleteVoteChoice(memberIdx: number, choices: number[]): Promise<any> {
+  async deleteVoteVote(memberIdx: number, choices: number[]): Promise<any> {
     const result = await this.createQueryBuilder()
       .delete()
       .from('vote_choice_member')
       .where({ memberMemberIdx: memberIdx, voteChoiceChoiceIdx: In(choices) })
+      .execute();
+    return result;
+  }
+
+  async insertVoteChoice(voteIdx: number, createVoteChoiceData: CreateVoteChoiceDto): Promise<any> {
+    const result = await this.createQueryBuilder()
+      .insert()
+      .into('vote_choice')
+      .values({ vote: { voteIdx }, ...createVoteChoiceData })
       .execute();
     return result;
   }

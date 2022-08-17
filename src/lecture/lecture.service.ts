@@ -39,7 +39,16 @@ export class LectureService {
     semester?: number,
   ): Promise<any> {
     const univIdx = (await (await this.userService.findOneByIdx(userIdx)).univ).univIdx;
-    const lectures = await this.lectureRepository.findLectures(univIdx, offset, keyword, type, grade, year, semester);
+    const lectures = await this.lectureRepository.findLectures(
+      userIdx,
+      univIdx,
+      offset,
+      keyword,
+      type,
+      grade,
+      year,
+      semester,
+    );
 
     lectures.forEach((lecture) => {
       lecture.favorite = parseInt(lecture.favorite);

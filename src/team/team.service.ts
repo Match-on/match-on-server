@@ -18,6 +18,7 @@ import { Vote } from 'src/entity/vote.entity';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { LectureService } from 'src/lecture/lecture.service';
 import { StudyService } from 'src/study/study.service';
+import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
 
 @Injectable()
 export class TeamService {
@@ -271,24 +272,35 @@ export class TeamService {
     return vote;
   }
 
-  async createVoteChoice(userIdx: number, voteIdx: number, createVoteChoiceData: CreateVoteChoiceDto): Promise<void> {
+  async createVoteVote(userIdx: number, voteIdx: number, createVoteVoteData: CreateVoteVoteDto): Promise<void> {
     const vote = await this.checkVote(voteIdx, { relations: ['team', 'choices'] });
     const voter = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
 
-    if (!vote.isMultiple && createVoteChoiceData.choices.length > 1) {
+    if (!vote.isMultiple && createVoteVoteData.choices.length > 1) {
       return errResponse(baseResponse.NOT_MULTIPLE_VOTE);
     }
     const choiceSet = new Set<number>();
     vote.choices.forEach((choice) => {
       choiceSet.add(choice.choiceIdx);
     });
-    createVoteChoiceData.choices.forEach((choice: number) => {
+    createVoteVoteData.choices.forEach((choice: number) => {
       if (!choiceSet.has(choice)) {
         return errResponse(baseResponse.NOT_EXIST_VOTE_CHOICE);
       }
     });
-    await this.voteRepository.deleteVoteChoice(voter.memberIdx, Array.from<number>(choiceSet));
-    const result = await this.voteRepository.insertVoteChoice(voter.memberIdx, createVoteChoiceData.choices);
+    await this.voteRepository.deleteVoteVote(voter.memberIdx, Array.from<number>(choiceSet));
+    const result = await this.voteRepository.insertVoteVote(voter.memberIdx, createVoteVoteData.choices);
+    return result;
+  }
+
+  async createVoteChoice(voteIdx: number, createVoteChoiceData: CreateVoteChoiceDto): Promise<void> {
+    const vote = await this.checkVote(voteIdx, { relations: ['team', 'choices'] });
+
+    if (!vote.isAddable) {
+      return errResponse(baseResponse.NOT_ADDABLE_VOTE);
+    }
+
+    const result = await this.voteRepository.insertVoteChoice(voteIdx, createVoteChoiceData);
     return result;
   }
 

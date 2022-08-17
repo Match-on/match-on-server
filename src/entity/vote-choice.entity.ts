@@ -19,7 +19,7 @@ export class VoteChoice {
 
   @Column({ type: 'varchar', length: 100 })
   description: string;
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   imageUrl: string;
 
   @CreateDateColumn({ type: 'timestamp' })

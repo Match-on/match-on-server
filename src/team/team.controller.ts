@@ -22,6 +22,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
+import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { ReadVoteDto } from './dto/read-vote.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -261,13 +262,24 @@ export class TeamController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post('/votes/:voteIdx/vote')
+  async postVoteVote(
+    @User() user: any,
+    @Param('voteIdx', ParseIntPipe) voteIdx: number,
+    @Body() createVoteVoteData: CreateVoteVoteDto,
+  ): Promise<object> {
+    await this.teamService.createVoteVote(user.userIdx, voteIdx, createVoteVoteData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('/votes/:voteIdx/choices')
   async postVoteChoice(
     @User() user: any,
     @Param('voteIdx', ParseIntPipe) voteIdx: number,
     @Body() createVoteChoiceData: CreateVoteChoiceDto,
   ): Promise<object> {
-    await this.teamService.createVoteChoice(user.userIdx, voteIdx, createVoteChoiceData);
+    await this.teamService.createVoteChoice(voteIdx, createVoteChoiceData);
     return response(baseResponse.SUCCESS);
   }
 

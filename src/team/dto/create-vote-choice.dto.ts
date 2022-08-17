@@ -1,7 +1,10 @@
-import { ArrayNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateVoteChoiceDto {
-  @IsNumber({}, { each: true })
-  @ArrayNotEmpty()
-  readonly choices: number[];
+  @IsNotEmpty()
+  @IsString()
+  readonly description: string;
+  @IsOptional()
+  @IsString()
+  readonly imageUrl: string;
 }

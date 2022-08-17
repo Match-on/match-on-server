@@ -4,6 +4,7 @@ import { EntityRepository, Like, Repository } from 'typeorm';
 @EntityRepository(Lecture)
 export class LectureRepository extends Repository<Lecture> {
   async findLectures(
+    userIdx: number,
     univIdx: number,
     offset: number,
     keyword?: string,
@@ -16,7 +17,7 @@ export class LectureRepository extends Repository<Lecture> {
       .where({ univ: univIdx })
       .offset(offset)
       .limit(10)
-      .leftJoin('l.favorites', 'f');
+      .leftJoin('l.favorites', 'f', `f.userIdx = ${userIdx}`);
     if (!!keyword) {
       query = query.andWhere({ name: Like(`%${keyword}%`) });
     }
