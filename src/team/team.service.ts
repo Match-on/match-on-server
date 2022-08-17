@@ -198,6 +198,60 @@ export class TeamService {
     return result;
   }
 
+  async createVoteHit(userIdx: number, voteIdx: number): Promise<void> {
+    await this.voteRepository.upsertVoteHit(userIdx, voteIdx);
+  }
+  async readVotes(userIdx: number, teamIdx: number, sort: string, keyword?: string): Promise<any[]> {
+    await this.readTeam(teamIdx);
+    const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.voteRepository.findVotes({ teamIdx }, viewer, sort, keyword);
+    return result;
+  }
+  async readVote(userIdx: number, voteIdx: number): Promise<any> {
+    const vote = await this.checkVote(voteIdx, { relations: ['team'] });
+    const viewer = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
+
+    const result = await this.voteRepository.findVote(voteIdx, viewer.memberIdx);
+    const raw = result.raw;
+    const entity = result.entities[0];
+    entity['isMe'] = raw[0].isMe;
+    entity['count'] = raw[0].count;
+    entity.choices.forEach((c) => {
+      c['isMe'] = false;
+      c['voter'] = [];
+      c.member.forEach((m) => {
+        if (m.memberIdx == viewer.memberIdx) {
+          c['isMe'] = true;
+        }
+        c.voter.push(m.name);
+      });
+      c['count'] = c.member.length;
+
+      if (entity.isAnonymous) {
+        delete c.voter;
+      }
+      delete c.member;
+    });
+    if (!!entity.comments) {
+      entity.comments.forEach((comment) => {
+        comment['name'] = comment.member.nickname;
+        comment['profileUrl'] = comment.member.profileUrl;
+        comment['isMe'] = comment.member.memberIdx == viewer.memberIdx ? '1' : '0';
+
+        delete comment['member'];
+        comment.childComments.forEach((child) => {
+          child['name'] = child.member.nickname;
+          child['profileUrl'] = child.member.profileUrl;
+          child['isMe'] = child.member.memberIdx == viewer.memberIdx ? '1' : '0';
+          delete child['member'];
+        });
+      });
+    }
+
+    return entity;
+  }
+
   async checkVote(voteIdx: number, option?: object): Promise<Vote> {
     const vote = await this.voteRepository.findOne(voteIdx, option);
     if (!vote) {

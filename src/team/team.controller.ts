@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Patch, Post, Param, Query, ParseIntPipe, UseGuards, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Param,
+  Query,
+  ParseIntPipe,
+  UseGuards,
+  Delete,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
@@ -11,6 +23,7 @@ import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { ReadVoteDto } from './dto/read-vote.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
@@ -219,6 +232,32 @@ export class TeamController {
   ): Promise<object> {
     await this.teamService.createVote(user.userIdx, teamIdx, createVoteData);
     return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/votes')
+  async getVotes(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    query: ReadVoteDto,
+  ): Promise<object> {
+    const { keyword, sort } = query;
+    const votes = await this.teamService.readVotes(user.userIdx, teamIdx, sort, keyword);
+    return response(baseResponse.SUCCESS, votes);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/votes/:voteIdx')
+  async getVote(@User() user: any, @Param('voteIdx', ParseIntPipe) voteIdx: number): Promise<object> {
+    const votes = await this.teamService.readVote(user.userIdx, voteIdx);
+    return response(baseResponse.SUCCESS, votes);
   }
 
   @UseGuards(AuthGuard('jwt'))
