@@ -19,14 +19,17 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
+import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { ReadScheduleDto } from './dto/read-schedule.dto';
 import { ReadVoteDto } from './dto/read-vote.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
+import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamService } from './team.service';
 
@@ -308,6 +311,57 @@ export class TeamController {
   @Delete('/votes/comments/:commentIdx')
   async deleteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
     await this.teamService.deleteComment(user.userIdx, commentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/schedules')
+  async postSchedule(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createScheduleData: CreateScheduleDto,
+  ): Promise<object> {
+    await this.teamService.createSchedule(user.userIdx, teamIdx, createScheduleData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/schedules')
+  async getSchedules(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    query: ReadScheduleDto,
+  ): Promise<object> {
+    const schedules = await this.teamService.readSchedules(user.userIdx, teamIdx, query);
+    return response(baseResponse.SUCCESS, schedules);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/schedules/search')
+  async searchSchedules(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query('keyword') keyword: string,
+  ): Promise<object> {
+    const schedules = await this.teamService.readSchedulesWithKeyword(user.userIdx, teamIdx, keyword);
+    return response(baseResponse.SUCCESS, schedules);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/schedules/:scheduleIdx')
+  async patchSchedule(
+    @User() user: any,
+    @Param('scheduleIdx', ParseIntPipe) scheduleIdx: number,
+    @Body() updateScheduleData: UpdateScheduleDto,
+  ): Promise<object> {
+    await this.teamService.updateSchedule(scheduleIdx, updateScheduleData);
     return response(baseResponse.SUCCESS);
   }
 }

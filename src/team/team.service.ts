@@ -19,6 +19,9 @@ import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { LectureService } from 'src/lecture/lecture.service';
 import { StudyService } from 'src/study/study.service';
 import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
+import { ScheduleRepository } from 'src/repository/schedule.repository';
+import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { UpdateScheduleDto } from './dto/update-schedule.dto';
 
 @Injectable()
 export class TeamService {
@@ -27,6 +30,7 @@ export class TeamService {
     @InjectRepository(MemberRepository) private memberRepository: MemberRepository,
     @InjectRepository(VoteRepository) private voteRepository: VoteRepository,
     @InjectRepository(VoteCommentRepository) private voteCommentRepository: VoteCommentRepository,
+    @InjectRepository(ScheduleRepository) private scheduleRepository: ScheduleRepository,
     private userService: UserService,
     private studyService: StudyService,
     private lectureService: LectureService,
@@ -338,5 +342,34 @@ export class TeamService {
     }
     const deleteResult = await this.voteCommentRepository.softDelete({ commentIdx });
     return deleteResult;
+  }
+
+  async createSchedule(userIdx: number, teamIdx: number, createScheduleData: CreateScheduleDto): Promise<any> {
+    await this.readTeam(teamIdx);
+    const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.scheduleRepository.insertSchedule(writer, { teamIdx }, createScheduleData);
+    return result;
+  }
+
+  async readSchedules(userIdx: number, teamIdx: number, query: { year: number; month: number }): Promise<any> {
+    await this.readTeam(teamIdx);
+    await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.scheduleRepository.findSchedules(teamIdx, query.year, query.month);
+    return result;
+  }
+
+  async readSchedulesWithKeyword(userIdx: number, teamIdx: number, keyword: string): Promise<any> {
+    await this.readTeam(teamIdx);
+    await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.scheduleRepository.findSchedulesWithKeyword(teamIdx, keyword);
+    return result;
+  }
+
+  async updateSchedule(scheduleIdx: number, updateScheduleData: UpdateScheduleDto): Promise<UpdateResult> {
+    const updateResult = await this.scheduleRepository.update(scheduleIdx, updateScheduleData);
+    return updateResult;
   }
 }
