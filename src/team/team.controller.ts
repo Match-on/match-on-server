@@ -18,6 +18,7 @@ import { User } from 'src/user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
+import { CreateMemoDto } from './dto/create-memo.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
@@ -139,6 +140,50 @@ export class TeamController {
       }
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':teamIdx/members')
+  async getMembers(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    await this.teamService.checkTeamMember(teamIdx, user.userIdx);
+    const result = await this.teamService.readMemberAll(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/members/:memberIdx')
+  async getMember(@User() user: any, @Param('memberIdx', ParseIntPipe) memberIdx: number): Promise<object> {
+    const result = await this.teamService.readMemberDetail(memberIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/members/:memberIdx/memos')
+  async postMemo(
+    @User() user: any,
+    @Param('memberIdx', ParseIntPipe) memberIdx: number,
+    @Body() createMemoData: CreateMemoDto,
+  ): Promise<object> {
+    await this.teamService.createMemo(memberIdx, createMemoData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/members/memos/:memoIdx')
+  async patchMemo(
+    @User() user: any,
+    @Param('memoIdx', ParseIntPipe) memoIdx: number,
+    @Body() createMemoData: CreateMemoDto,
+  ): Promise<object> {
+    await this.teamService.updateMemo(memoIdx, createMemoData.memo);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/members/memos/:memoIdx')
+  async deleteMemo(@User() user: any, @Param('memoIdx', ParseIntPipe) memoIdx: number): Promise<object> {
+    await this.teamService.deleteMemo(memoIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Patch('/members/:memberIdx')
   async patchMember(

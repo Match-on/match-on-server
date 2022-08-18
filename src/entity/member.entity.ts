@@ -10,6 +10,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { MemberMemo } from './member-memo.entity';
 import { NoteComment } from './note-comment.entity';
 import { NoteTask } from './note-task.entity';
 import { Note } from './note.entity';
@@ -62,4 +63,7 @@ export class Member {
   voteHits: Vote[];
   @ManyToMany(() => VoteChoice, (choice) => choice.member)
   voteChoices: VoteChoice[];
+
+  @OneToMany(() => MemberMemo, (memo) => memo.member)
+  memos: MemberMemo[];
 }

@@ -6,7 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
+import { DeleteResult, getRepository, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { UpdateMemeberDto } from './dto/update-member.dto';
@@ -22,6 +22,8 @@ import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
 import { ScheduleRepository } from 'src/repository/schedule.repository';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
+import { CreateMemoDto } from './dto/create-memo.dto';
+import { MemberMemo } from 'src/entity/member-memo.entity';
 
 @Injectable()
 export class TeamService {
@@ -126,6 +128,23 @@ export class TeamService {
       return errResponse(baseResponse.NOT_EXIST_MEMBER);
     }
     return member;
+  }
+  async readMemberDetail(memberIdx: number): Promise<any> {
+    const member = await this.memberRepository.findMember(memberIdx);
+    if (!member) {
+      return errResponse(baseResponse.NOT_EXIST_MEMBER);
+    }
+    return member;
+  }
+  async readMemberAll(userIdx: number, teamIdx: number): Promise<any> {
+    const member = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const members = await this.memberRepository.findMemberAll(teamIdx);
+    members.forEach((m) => {
+      if (m.memberIdx == member.memberIdx) m['isMe'] = '1';
+      else m['isMe'] = '0';
+    });
+    return members;
   }
 
   async readMemberWithoutIdx(userIdx: number, teamIdx: number): Promise<Member> {
@@ -371,5 +390,20 @@ export class TeamService {
   async updateSchedule(scheduleIdx: number, updateScheduleData: UpdateScheduleDto): Promise<UpdateResult> {
     const updateResult = await this.scheduleRepository.update(scheduleIdx, updateScheduleData);
     return updateResult;
+  }
+
+  async createMemo(memberIdx: number, createMemoData: CreateMemoDto): Promise<any> {
+    await this.readMemberDetail(memberIdx);
+
+    const result = await this.memberRepository.insertMemo({ memberIdx }, createMemoData);
+    return result;
+  }
+  async updateMemo(memoIdx: number, memo: string): Promise<UpdateResult> {
+    const updateResult = await getRepository(MemberMemo).update(memoIdx, { memo });
+    return updateResult;
+  }
+  async deleteMemo(memoIdx: number): Promise<DeleteResult> {
+    const deleteResult = await getRepository(MemberMemo).softDelete({ memoIdx });
+    return deleteResult;
   }
 }
