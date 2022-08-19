@@ -82,6 +82,14 @@ export class LectureController {
     return response(baseResponse.SUCCESS);
   }
 
+  @Get('/:lectureIdx/name')
+  async getLectureName(@User() user: any, @Param('lectureIdx', ParseIntPipe) lectureIdx: number): Promise<object> {
+    const lecture = await this.lectureService.readLecture(lectureIdx);
+
+    const { name, classNumber } = lecture;
+    return response(baseResponse.SUCCESS, { name, classNumber });
+  }
+
   @Get('/:lectureIdx/posts')
   async getPosts(
     @User() user: any,

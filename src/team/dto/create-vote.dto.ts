@@ -32,7 +32,7 @@ class ChoiceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  readonly description: number;
+  readonly description: string;
   @IsString()
   @IsOptional()
   readonly imageUrl: string;
