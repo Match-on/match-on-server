@@ -62,10 +62,8 @@ export class VoteRepository extends Repository<Vote> {
       .where({ voteIdx })
       .leftJoin('v.comments', 'vc', 'v.voteIdx = vc.vote and vc.parentCommentCommentIdx IS NULL')
       .leftJoin('vc.member', 'vcm')
-      .leftJoin('vcm.user', 'vcu')
       .leftJoin('vc.childComments', 'cc')
       .leftJoin('cc.member', 'ccm')
-      .leftJoin('ccm.user', 'ccu')
       .leftJoin('v.choices', 'choice')
       .leftJoin('choice.member', 'choice_member')
       .select([
@@ -86,13 +84,13 @@ export class VoteRepository extends Repository<Vote> {
         'vc.createdAt',
         'vcm.memberIdx',
         'vcm.name',
-        'vcu.profileUrl',
+        'vcm.profileUrl',
         'cc.commentIdx',
         'cc.comment',
         'cc.createdAt',
         'ccm.memberIdx',
         'ccm.name',
-        'ccu.profileUrl',
+        'ccm.profileUrl',
       ])
       .addSelect(`if(v.memberMemberIdx = ${memberIdx}, true, false) as isMe`)
       .addSelect(`CONCAT((${choicesQb.getQuery()}), '/', (${memberQb.getQuery()})) as count`)

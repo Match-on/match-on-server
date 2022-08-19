@@ -270,13 +270,13 @@ export class TeamService {
     });
     if (!!entity.comments) {
       entity.comments.forEach((comment) => {
-        comment['name'] = comment.member.nickname;
+        comment['name'] = comment.member.name;
         comment['profileUrl'] = comment.member.profileUrl;
         comment['isMe'] = comment.member.memberIdx == viewer.memberIdx ? '1' : '0';
 
         delete comment['member'];
         comment.childComments.forEach((child) => {
-          child['name'] = child.member.nickname;
+          child['name'] = child.member.name;
           child['profileUrl'] = child.member.profileUrl;
           child['isMe'] = child.member.memberIdx == viewer.memberIdx ? '1' : '0';
           delete child['member'];
