@@ -30,6 +30,7 @@ export class StudyRepository extends Repository<Study> {
         'r.region as region',
         's.count as count',
       ])
+      .addSelect(`if(s.status = 'Y', true, false) as isRecruiting`)
       .addSelect(`(${hitsQb.getQuery()}) as hitCount`)
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .getRawMany();

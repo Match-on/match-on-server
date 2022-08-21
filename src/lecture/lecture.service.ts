@@ -121,8 +121,8 @@ export class LectureService {
     await this.createPostHit(userIdx, lecturePostIdx);
 
     let post: any = result.entities[0];
-    const { writerIdx, writer, profileUrl, hitCount, commentCount, isMe } = result.raw[0];
-    post = { writer, profileUrl, hitCount, commentCount, isMe, ...post };
+    const { writerIdx, writer, profileUrl, hitCount, commentCount, isMe, isRecruiting } = result.raw[0];
+    post = { writer, profileUrl, hitCount, commentCount, isMe, isRecruiting, ...post };
     if (!!post.comments) {
       post.comments.forEach((comment) => {
         comment['isMe'] = comment.user.userIdx == userIdx ? '1' : '0';

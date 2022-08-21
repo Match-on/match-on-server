@@ -108,6 +108,7 @@ export class LecturePostRepository extends Repository<LecturePost> {
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`if(u.userIdx = ${userIdx}, true, false) as isMe`)
       .addSelect(`lp.type as type`)
+      .addSelect(`if(lp.status = 'Y' AND lp.type = 'team', true, false) as isRecruiting`)
       .getRawAndEntities();
     return result;
   }
