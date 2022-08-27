@@ -14,6 +14,8 @@ export class NoteFile {
   @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
   fileIdx: number;
 
+  @Column({ type: 'varchar', length: 1000 })
+  fileName: string;
   @Column({ type: 'text' })
   url: string;
 

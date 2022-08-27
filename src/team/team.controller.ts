@@ -246,30 +246,58 @@ export class TeamController {
     @Body() createNoteData: CreateNoteDto,
   ): Promise<object> {
     const { files, tasks, ...data } = createNoteData;
-    const fileData = [];
     const taskData = [];
-    files?.forEach((url) => {
-      fileData.push({ url });
-    });
     tasks?.forEach((task) => {
       taskData.push({ member: { memberIdx: task.memberIdx }, description: task.description });
     });
-    await this.teamService.createNote(user.userIdx, teamIdx, data, fileData, taskData);
+    await this.teamService.createNote(user.userIdx, teamIdx, data, files, taskData);
     return response(baseResponse.SUCCESS);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:teamIdx/notes')
-  async getNotes(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
-    const result = await this.teamService.readNotes(user.userIdx, teamIdx);
+  async getNotes(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query('keyword') keyword: string,
+  ): Promise<object> {
+    const result = await this.teamService.readNotes(user.userIdx, teamIdx, keyword);
     return response(baseResponse.SUCCESS, result);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/notes/:noteIdx')
   async getNote(@User() user: any, @Param('noteIdx', ParseIntPipe) noteIdx: number): Promise<object> {
-    const result = await this.teamService.readNote(noteIdx);
+    const result = await this.teamService.readNote(user.userIdx, noteIdx);
     return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/notes/:noteIdx/comments')
+  async postNoteComment(
+    @User() user: any,
+    @Param('noteIdx', ParseIntPipe) noteIdx: number,
+    @Body() createCommentData: CreateCommentDto,
+  ): Promise<object> {
+    const { comment, parentIdx } = createCommentData;
+    await this.teamService.createNoteComment(user.userIdx, noteIdx, comment, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/notes/comments/:commentIdx')
+  async patchNoteComment(
+    @User() user: any,
+    @Param('commentIdx', ParseIntPipe) commentIdx: number,
+    @Body() updateCommentData: UpdateCommentDto,
+  ): Promise<object> {
+    await this.teamService.updateNoteComment(user.userIdx, commentIdx, updateCommentData.comment);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/notes/comments/:commentIdx')
+  async deleteNoteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.teamService.deleteNoteComment(user.userIdx, commentIdx);
+    return response(baseResponse.SUCCESS);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -333,29 +361,29 @@ export class TeamController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/votes/:voteIdx/comments')
-  async postComment(
+  async postVoteComment(
     @User() user: any,
     @Param('voteIdx', ParseIntPipe) voteIdx: number,
     @Body() createCommentData: CreateCommentDto,
   ): Promise<object> {
     const { comment, parentIdx } = createCommentData;
-    await this.teamService.createComment(user.userIdx, voteIdx, comment, parentIdx);
+    await this.teamService.createVoteComment(user.userIdx, voteIdx, comment, parentIdx);
     return response(baseResponse.SUCCESS);
   }
   @UseGuards(AuthGuard('jwt'))
   @Patch('/votes/comments/:commentIdx')
-  async patchComment(
+  async patchVoteComment(
     @User() user: any,
     @Param('commentIdx', ParseIntPipe) commentIdx: number,
     @Body() updateCommentData: UpdateCommentDto,
   ): Promise<object> {
-    await this.teamService.updateComment(user.userIdx, commentIdx, updateCommentData.comment);
+    await this.teamService.updateVoteComment(user.userIdx, commentIdx, updateCommentData.comment);
     return response(baseResponse.SUCCESS);
   }
   @UseGuards(AuthGuard('jwt'))
   @Delete('/votes/comments/:commentIdx')
-  async deleteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
-    await this.teamService.deleteComment(user.userIdx, commentIdx);
+  async deleteVoteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.teamService.deleteVoteComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
 

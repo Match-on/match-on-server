@@ -1,26 +1,12 @@
-import { Member } from 'src/entity/member.entity';
-import { NoteComment } from 'src/entity/note-comment.entity';
-import { Note } from 'src/entity/note.entity';
 import { Team } from 'src/entity/team.entity';
 import { CreateTeamDto } from 'src/team/dto/create-team.dto';
-import { createQueryBuilder, EntityRepository, getRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(Team)
 export class TeamRepository extends Repository<Team> {
   async insertTeam(createTeamDto: CreateTeamDto): Promise<Team> {
     const team: Team = this.create(createTeamDto);
     const result: Team = await this.save(team);
-    return result;
-  }
-
-  async insertNote(member: Member, team: any, data: object, files: any[], tasks: any[]): Promise<Note> {
-    const noteRepository = getRepository(Note);
-    const note: Note = noteRepository.create(data);
-    note.member = member;
-    note.team = team;
-    note.files = files;
-    note.tasks = tasks;
-    const result: Note = await noteRepository.save(note);
     return result;
   }
 
@@ -86,44 +72,5 @@ export class TeamRepository extends Repository<Team> {
 
   async deleteFavorite(userIdx: number, teamIdx: number): Promise<void> {
     await this.createQueryBuilder().relation('favorites').of({ teamIdx }).remove({ userIdx });
-  }
-
-  async findNotes(teamIdx: number, memberIdx: number): Promise<any> {
-    const commentQb = createQueryBuilder(NoteComment, 'nc').select('COUNT(*)').where('nc.noteNoteIdx = n.noteIdx');
-
-    const notes = createQueryBuilder(Note, 'n')
-      .where({ team: { teamIdx } })
-      .leftJoin('n.member', 'm')
-      .leftJoin('note_hit', 'n_h', 'n.noteIdx = n_h.noteNoteIdx AND n_h.memberMemberIdx = :memberIdx', { memberIdx })
-      .leftJoin('n.files', 'f')
-      .select(['noteIdx', 'title', 'n.createdAt as createdAt', 'name'])
-      .addSelect('if(n_h.memberMemberIdx IS NULL,true,false) as isNew')
-      .addSelect(`(${commentQb.getQuery()}) as commentCount`)
-      .addSelect(`group_concat(f.url separator ",") as files`)
-      .groupBy('noteIdx')
-      .getRawMany();
-    return notes;
-  }
-
-  async findNote(noteIdx: number): Promise<any> {
-    const notes = createQueryBuilder(Note, 'n')
-      .where({ noteIdx })
-      .leftJoin('n.member', 'm')
-      .leftJoin('n.tasks', 't')
-      .leftJoin('n.files', 'f')
-      .leftJoin('t.member', 'tm')
-      .select([
-        'n.noteIdx',
-        'n.title ',
-        'n.body',
-        'n.createdAt',
-        'm.name',
-        'f.url',
-        'tm.name',
-        'tm.profileUrl',
-        't.description',
-      ])
-      .getRawAndEntities();
-    return notes;
   }
 }

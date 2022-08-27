@@ -9,15 +9,25 @@ export class CreateNoteDto {
   @IsString()
   @IsNotEmpty()
   readonly body: string;
-  @IsString({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => FileDto)
   @IsOptional()
-  readonly files: string[];
+  readonly files: FileDto[];
   @ValidateNested({ each: true })
   @Type(() => TaskDto)
   @IsOptional()
   readonly tasks: TaskDto[];
 }
 
+class FileDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  readonly fileName: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly url: string;
+}
 class TaskDto {
   @IsNumber()
   @IsNotEmpty()

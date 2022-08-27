@@ -9,10 +9,18 @@ import { UserModule } from 'src/user/user.module';
 import { TeamController } from './team.controller';
 import { TeamService } from './team.service';
 import { ScheduleRepository } from 'src/repository/schedule.repository';
+import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TeamRepository, VoteRepository, VoteCommentRepository, ScheduleRepository]),
+    TypeOrmModule.forFeature([
+      TeamRepository,
+      VoteRepository,
+      VoteCommentRepository,
+      ScheduleRepository,
+      NoteRepository,
+      NoteCommentRepository,
+    ]),
     TypeOrmModule.forFeature([MemberRepository]),
     UserModule,
     StudyModule,

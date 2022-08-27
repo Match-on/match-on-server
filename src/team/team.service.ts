@@ -24,6 +24,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { CreateMemoDto } from './dto/create-memo.dto';
 import { MemberMemo } from 'src/entity/member-memo.entity';
+import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
 
 @Injectable()
 export class TeamService {
@@ -32,6 +33,8 @@ export class TeamService {
     @InjectRepository(MemberRepository) private memberRepository: MemberRepository,
     @InjectRepository(VoteRepository) private voteRepository: VoteRepository,
     @InjectRepository(VoteCommentRepository) private voteCommentRepository: VoteCommentRepository,
+    @InjectRepository(NoteRepository) private noteRepository: NoteRepository,
+    @InjectRepository(NoteCommentRepository) private noteCommentRepository: NoteCommentRepository,
     @InjectRepository(ScheduleRepository) private scheduleRepository: ScheduleRepository,
     private userService: UserService,
     private studyService: StudyService,
@@ -206,23 +209,104 @@ export class TeamService {
         await this.checkMember(tasks[i].member.memberIdx, teamIdx);
       }
     }
-    const result = await this.teamRepository.insertNote(writer, { teamIdx }, data, files, tasks);
+    const result = await this.noteRepository.insertNote(writer, { teamIdx }, data, files, tasks);
     return result;
   }
-  async readNotes(userIdx: number, teamIdx: number): Promise<Note> {
+  async createNoteHit(userIdx: number, noteIdx: number): Promise<void> {
+    await this.noteRepository.upsertNoteHit(userIdx, noteIdx);
+  }
+  async checkNote(noteIdx: number, option?: object): Promise<Note> {
+    const note = await getRepository(Note).findOne(noteIdx, option);
+    if (!note) {
+      return errResponse(baseResponse.NOT_EXIST_NOTE);
+    }
+    return note;
+  }
+  async readNotes(userIdx: number, teamIdx: number, keyword: string): Promise<Note> {
     await this.readTeam(teamIdx);
     const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
 
-    const result = await this.teamRepository.findNotes(teamIdx, viewer.memberIdx);
+    const result = await this.noteRepository.findNotes(teamIdx, viewer.memberIdx, keyword);
     result?.forEach((r) => {
       r.files = r.files?.split(',') || [];
     });
     return result;
   }
-  async readNote(noteIdx: number): Promise<Note> {
-    const result = await this.teamRepository.findNote(noteIdx);
+  async readNote(userIdx: number, noteIdx: number): Promise<Note> {
+    const note = await this.checkNote(noteIdx, { relations: ['team'] });
+    const viewer = await this.readMemberWithoutIdx(userIdx, note.team.teamIdx);
 
-    return result;
+    await this.createVoteHit(userIdx, noteIdx);
+
+    const result = await this.noteRepository.findNote(viewer.memberIdx, noteIdx);
+    const raw = result.raw;
+    const entity = result.entities[0];
+
+    entity['writer'] = entity.member.name;
+    delete entity.member;
+    entity['isMe'] = raw[0].isMe;
+    if (!!entity.comments) {
+      entity.comments.forEach((comment) => {
+        comment['name'] = comment.member.name;
+        comment['profileUrl'] = comment.member.profileUrl;
+        comment['isMe'] = comment.member.memberIdx == viewer.memberIdx ? '1' : '0';
+
+        delete comment['member'];
+        comment.childComments.forEach((child) => {
+          child['name'] = child.member.name;
+          child['profileUrl'] = child.member.profileUrl;
+          child['isMe'] = child.member.memberIdx == viewer.memberIdx ? '1' : '0';
+          delete child['member'];
+        });
+      });
+    }
+    entity.tasks = entity.team.members;
+    delete entity.team;
+    entity.tasks.forEach((task) => {
+      task.description = [];
+      task.noteTasks.forEach((t) => {
+        task.description.push(t.description);
+      });
+      delete task.noteTasks;
+    });
+
+    return entity;
+  }
+
+  async checkNoteComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
+    const comment = await this.noteCommentRepository.findComment(commentIdx);
+    if (!comment) {
+      return errResponse(baseResponse.NOT_EXIST_NOTE_COMMENT);
+    }
+    return comment;
+  }
+
+  async createNoteComment(userIdx: number, noteIdx: number, comment: string, parentIdx: number): Promise<void> {
+    const note = await this.checkNote(noteIdx, { relations: ['team'] });
+    const writer = await this.readMemberWithoutIdx(userIdx, note.team.teamIdx);
+
+    if (parentIdx) {
+      await this.checkNoteComment(parentIdx);
+    }
+
+    await this.noteCommentRepository.insertComment(writer, note, { comment }, { commentIdx: parentIdx });
+  }
+
+  async updateNoteComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkNoteComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.noteCommentRepository.update(commentIdx, { comment });
+    return updateResult;
+  }
+  async deleteNoteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const result = await this.checkNoteComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.noteCommentRepository.softDelete({ commentIdx });
+    return deleteResult;
   }
 
   async createVote(userIdx: number, teamIdx: number, createVoteData: CreateVoteDto): Promise<Vote> {
@@ -246,6 +330,8 @@ export class TeamService {
   async readVote(userIdx: number, voteIdx: number): Promise<any> {
     const vote = await this.checkVote(voteIdx, { relations: ['team'] });
     const viewer = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
+
+    await this.createVoteHit(userIdx, voteIdx);
 
     const result = await this.voteRepository.findVote(voteIdx, viewer.memberIdx);
     const raw = result.raw;
@@ -327,7 +413,7 @@ export class TeamService {
     return result;
   }
 
-  async checkComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
+  async checkVoteComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
     const comment = await this.voteCommentRepository.findComment(commentIdx);
     if (!comment) {
       return errResponse(baseResponse.NOT_EXIST_VOTE_COMMENT);
@@ -335,27 +421,27 @@ export class TeamService {
     return comment;
   }
 
-  async createComment(userIdx: number, voteIdx: number, comment: string, parentIdx: number): Promise<void> {
+  async createVoteComment(userIdx: number, voteIdx: number, comment: string, parentIdx: number): Promise<void> {
     const vote = await this.checkVote(voteIdx, { relations: ['team', 'choices'] });
     const writer = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
 
     if (parentIdx) {
-      await this.checkComment(parentIdx);
+      await this.checkVoteComment(parentIdx);
     }
 
     await this.voteCommentRepository.insertComment(writer, vote, { comment }, { commentIdx: parentIdx });
   }
 
-  async updateComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
-    const result = await this.checkComment(commentIdx);
+  async updateVoteComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkVoteComment(commentIdx);
     if (result.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const updateResult = await this.voteCommentRepository.update(commentIdx, { comment });
     return updateResult;
   }
-  async deleteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
-    const result = await this.checkComment(commentIdx);
+  async deleteVoteComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const result = await this.checkVoteComment(commentIdx);
     if (result.userIdx != userIdx) {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
