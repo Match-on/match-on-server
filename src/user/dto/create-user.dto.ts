@@ -21,13 +21,13 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  @Matches(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i)
+  // @Matches(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i)
   readonly email: string;
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(20)
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)
+  // @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)
   readonly password: string;
   @IsString()
   @IsNotEmpty()
@@ -39,7 +39,7 @@ export class CreateUserDto {
   readonly nickname: string;
   @IsString()
   @IsOptional()
-  @Matches(/(http(s)?:\/\/)([a-z0-9w]+.*)+[a-z0-9]{2,4}/i)
+  // @Matches(/(http(s)?:\/\/)([a-z0-9w]+.*)+[a-z0-9]{2,4}/i)
   readonly profileUrl: string;
   @IsString()
   @IsOptional()
