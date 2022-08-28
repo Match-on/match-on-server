@@ -14,11 +14,11 @@ export class VoteRepository extends Repository<Vote> {
     return result;
   }
 
-  async upsertVoteHit(userIdx: number, voteIdx: number): Promise<void> {
+  async upsertVoteHit(memberIdx: number, voteIdx: number): Promise<void> {
     await this.createQueryBuilder()
       .insert()
       .into('vote_hit')
-      .values({ user: { userIdx }, vote: { voteIdx } })
+      .values({ memberMemberIdx: memberIdx, voteVoteIdx: voteIdx })
       .updateEntity(false)
       .orIgnore()
       .execute();

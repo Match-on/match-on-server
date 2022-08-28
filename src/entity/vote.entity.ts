@@ -42,9 +42,9 @@ export class Vote {
   @DeleteDateColumn({ type: 'timestamp' })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Member, (member) => member.notes)
+  @ManyToOne(() => Member, (member) => member.votes)
   member: Member;
-  @ManyToOne(() => Team, (team) => team.notes)
+  @ManyToOne(() => Team, (team) => team.votes)
   team: Team;
   @OneToMany(() => VoteChoice, (choice) => choice.vote, { cascade: true })
   choices: VoteChoice[];

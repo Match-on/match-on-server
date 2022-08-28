@@ -14,6 +14,8 @@ import { MemberMemo } from './member-memo.entity';
 import { NoteComment } from './note-comment.entity';
 import { NoteTask } from './note-task.entity';
 import { Note } from './note.entity';
+import { NoticeComment } from './notice-comment.entity';
+import { Notice } from './notice.entity';
 import { Team } from './team.entity';
 import { User } from './user.entity';
 import { VoteChoice } from './vote-choice.entity';
@@ -51,18 +53,26 @@ export class Member {
   notes: Note[];
   @OneToMany(() => NoteTask, (noteTask) => noteTask.member)
   noteTasks: NoteTask[];
-
   @OneToMany(() => NoteComment, (comment) => comment.member)
   noteComments: NoteComment[];
   @ManyToMany(() => Note, (note) => note.hits)
   noteHits: Note[];
 
+  @OneToMany(() => Vote, (vote) => vote.member)
+  votes: Vote[];
   @OneToMany(() => VoteComment, (comment) => comment.member)
   voteComments: VoteComment[];
   @ManyToMany(() => Vote, (vote) => vote.hits)
   voteHits: Vote[];
   @ManyToMany(() => VoteChoice, (choice) => choice.member)
   voteChoices: VoteChoice[];
+
+  @OneToMany(() => Notice, (notice) => notice.member)
+  notices: Notice[];
+  @OneToMany(() => NoticeComment, (comment) => comment.member)
+  noticeComments: NoticeComment[];
+  @ManyToMany(() => Notice, (notice) => notice.hits)
+  noticeHits: Notice[];
 
   @OneToMany(() => MemberMemo, (memo) => memo.member)
   memos: MemberMemo[];

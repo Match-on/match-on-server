@@ -10,6 +10,7 @@ import { TeamController } from './team.controller';
 import { TeamService } from './team.service';
 import { ScheduleRepository } from 'src/repository/schedule.repository';
 import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
+import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice.repository';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repos
       ScheduleRepository,
       NoteRepository,
       NoteCommentRepository,
+      NoticeRepository,
+      NoticeCommentRepository,
     ]),
     TypeOrmModule.forFeature([MemberRepository]),
     UserModule,

@@ -78,11 +78,11 @@ export class NoteRepository extends Repository<Note> {
     return notes;
   }
 
-  async upsertNoteHit(userIdx: number, noteIdx: number): Promise<void> {
+  async upsertNoteHit(memberIdx: number, noteIdx: number): Promise<void> {
     await this.createQueryBuilder()
       .insert()
       .into('note_hit')
-      .values({ user: { userIdx }, note: { noteIdx } })
+      .values({ memberMemberIdx: memberIdx, noteNoteIdx: noteIdx })
       .updateEntity(false)
       .orIgnore()
       .execute();

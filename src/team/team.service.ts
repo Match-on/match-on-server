@@ -25,6 +25,8 @@ import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { CreateMemoDto } from './dto/create-memo.dto';
 import { MemberMemo } from 'src/entity/member-memo.entity';
 import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
+import { Notice } from 'src/entity/notice.entity';
+import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice.repository';
 
 @Injectable()
 export class TeamService {
@@ -35,6 +37,8 @@ export class TeamService {
     @InjectRepository(VoteCommentRepository) private voteCommentRepository: VoteCommentRepository,
     @InjectRepository(NoteRepository) private noteRepository: NoteRepository,
     @InjectRepository(NoteCommentRepository) private noteCommentRepository: NoteCommentRepository,
+    @InjectRepository(NoticeRepository) private noticeRepository: NoticeRepository,
+    @InjectRepository(NoticeCommentRepository) private noticeCommentRepository: NoticeCommentRepository,
     @InjectRepository(ScheduleRepository) private scheduleRepository: ScheduleRepository,
     private userService: UserService,
     private studyService: StudyService,
@@ -212,8 +216,8 @@ export class TeamService {
     const result = await this.noteRepository.insertNote(writer, { teamIdx }, data, files, tasks);
     return result;
   }
-  async createNoteHit(userIdx: number, noteIdx: number): Promise<void> {
-    await this.noteRepository.upsertNoteHit(userIdx, noteIdx);
+  async createNoteHit(memberIdx: number, noteIdx: number): Promise<void> {
+    await this.noteRepository.upsertNoteHit(memberIdx, noteIdx);
   }
   async checkNote(noteIdx: number, option?: object): Promise<Note> {
     const note = await getRepository(Note).findOne(noteIdx, option);
@@ -236,7 +240,7 @@ export class TeamService {
     const note = await this.checkNote(noteIdx, { relations: ['team'] });
     const viewer = await this.readMemberWithoutIdx(userIdx, note.team.teamIdx);
 
-    await this.createVoteHit(userIdx, noteIdx);
+    await this.createNoteHit(viewer.memberIdx, noteIdx);
 
     const result = await this.noteRepository.findNote(viewer.memberIdx, noteIdx);
     const raw = result.raw;
@@ -317,8 +321,8 @@ export class TeamService {
     return result;
   }
 
-  async createVoteHit(userIdx: number, voteIdx: number): Promise<void> {
-    await this.voteRepository.upsertVoteHit(userIdx, voteIdx);
+  async createVoteHit(memberIdx: number, voteIdx: number): Promise<void> {
+    await this.voteRepository.upsertVoteHit(memberIdx, voteIdx);
   }
   async readVotes(userIdx: number, teamIdx: number, sort: string, keyword?: string): Promise<any[]> {
     await this.readTeam(teamIdx);
@@ -331,7 +335,7 @@ export class TeamService {
     const vote = await this.checkVote(voteIdx, { relations: ['team'] });
     const viewer = await this.readMemberWithoutIdx(userIdx, vote.team.teamIdx);
 
-    await this.createVoteHit(userIdx, voteIdx);
+    await this.createVoteHit(viewer.memberIdx, voteIdx);
 
     const result = await this.voteRepository.findVote(voteIdx, viewer.memberIdx);
     const raw = result.raw;
@@ -446,6 +450,105 @@ export class TeamService {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
     const deleteResult = await this.voteCommentRepository.softDelete({ commentIdx });
+    return deleteResult;
+  }
+
+  async createNotice(
+    userIdx: number,
+    teamIdx: number,
+    data: { title: string; body: string },
+    files?: any[],
+  ): Promise<Notice> {
+    await this.readTeam(teamIdx);
+    const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+    const result = await this.noticeRepository.insertNotice(writer, { teamIdx }, data, files);
+    return result;
+  }
+  async createNoticeHit(memberIdx: number, noticeIdx: number): Promise<void> {
+    await this.noticeRepository.upsertNoticeHit(memberIdx, noticeIdx);
+  }
+  async checkNotice(noticeIdx: number, option?: object): Promise<Notice> {
+    const notice = await this.noticeRepository.findOne(noticeIdx, option);
+    if (!notice) {
+      return errResponse(baseResponse.NOT_EXIST_NOTICE);
+    }
+    return notice;
+  }
+  async readNotices(userIdx: number, teamIdx: number, sort: string, keyword?: string): Promise<Notice> {
+    await this.readTeam(teamIdx);
+    const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.noticeRepository.findNotices(teamIdx, viewer.memberIdx, sort, keyword);
+    result?.forEach((r) => {
+      r.files = r.files?.split(',') || [];
+    });
+    return result;
+  }
+  async readNotice(userIdx: number, noticeIdx: number): Promise<Notice> {
+    const notice = await this.checkNotice(noticeIdx, { relations: ['team'] });
+    const viewer = await this.readMemberWithoutIdx(userIdx, notice.team.teamIdx);
+
+    await this.createNoticeHit(viewer.memberIdx, noticeIdx);
+
+    const result = await this.noticeRepository.findNotice(viewer.memberIdx, noticeIdx);
+    const raw = result.raw;
+    const entity = result.entities[0];
+
+    entity['writer'] = entity.member.name;
+    delete entity.member;
+    entity['isMe'] = raw[0].isMe;
+    if (!!entity.comments) {
+      entity.comments.forEach((comment) => {
+        comment['name'] = comment.member.name;
+        comment['profileUrl'] = comment.member.profileUrl;
+        comment['isMe'] = comment.member.memberIdx == viewer.memberIdx ? '1' : '0';
+
+        delete comment['member'];
+        comment.childComments.forEach((child) => {
+          child['name'] = child.member.name;
+          child['profileUrl'] = child.member.profileUrl;
+          child['isMe'] = child.member.memberIdx == viewer.memberIdx ? '1' : '0';
+          delete child['member'];
+        });
+      });
+    }
+
+    return entity;
+  }
+
+  async checkNoticeComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
+    const comment = await this.noticeCommentRepository.findComment(commentIdx);
+    if (!comment) {
+      return errResponse(baseResponse.NOT_EXIST_NOTICE_COMMENT);
+    }
+    return comment;
+  }
+
+  async createNoticeComment(userIdx: number, noticeIdx: number, comment: string, parentIdx: number): Promise<void> {
+    const notice = await this.checkNotice(noticeIdx, { relations: ['team'] });
+    const writer = await this.readMemberWithoutIdx(userIdx, notice.team.teamIdx);
+
+    if (parentIdx) {
+      await this.checkNoticeComment(parentIdx);
+    }
+
+    await this.noticeCommentRepository.insertComment(writer, notice, { comment }, { commentIdx: parentIdx });
+  }
+
+  async updateNoticeComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkNoticeComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.noticeCommentRepository.update(commentIdx, { comment });
+    return updateResult;
+  }
+  async deleteNoticeComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const result = await this.checkNoticeComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.noticeCommentRepository.softDelete({ commentIdx });
     return deleteResult;
   }
 

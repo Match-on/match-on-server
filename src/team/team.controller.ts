@@ -20,6 +20,7 @@ import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateMemoDto } from './dto/create-memo.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
+import { CreateNoticeDto } from './dto/create-notice.dto';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { CreateTeamWithMembersDto } from './dto/create-team-with-members.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -384,6 +385,73 @@ export class TeamController {
   @Delete('/votes/comments/:commentIdx')
   async deleteVoteComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
     await this.teamService.deleteVoteComment(user.userIdx, commentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/notices')
+  async postNotice(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createNoticeData: CreateNoticeDto,
+  ): Promise<object> {
+    const { files, ...data } = createNoticeData;
+    await this.teamService.createNotice(user.userIdx, teamIdx, data, files);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/notices')
+  async getNotices(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    query: ReadVoteDto,
+  ): Promise<object> {
+    const { keyword, sort } = query;
+
+    const result = await this.teamService.readNotices(user.userIdx, teamIdx, sort, keyword);
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/notices/:noticeIdx')
+  async getNotice(@User() user: any, @Param('noticeIdx', ParseIntPipe) noticeIdx: number): Promise<object> {
+    const result = await this.teamService.readNotice(user.userIdx, noticeIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/notices/:noticeIdx/comments')
+  async postNoticeComment(
+    @User() user: any,
+    @Param('noticeIdx', ParseIntPipe) noticeIdx: number,
+    @Body() createCommentData: CreateCommentDto,
+  ): Promise<object> {
+    const { comment, parentIdx } = createCommentData;
+    await this.teamService.createNoticeComment(user.userIdx, noticeIdx, comment, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/notices/comments/:commentIdx')
+  async patchNoticeComment(
+    @User() user: any,
+    @Param('commentIdx', ParseIntPipe) commentIdx: number,
+    @Body() updateCommentData: UpdateCommentDto,
+  ): Promise<object> {
+    await this.teamService.updateNoticeComment(user.userIdx, commentIdx, updateCommentData.comment);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/notices/comments/:commentIdx')
+  async deleteNoticeComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.teamService.deleteNoticeComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
 
