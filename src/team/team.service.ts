@@ -9,7 +9,6 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 import { DeleteResult, getRepository, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
-import { UpdateMemeberDto } from './dto/update-member.dto';
 import { Note } from 'src/entity/note.entity';
 import { Member } from 'src/entity/member.entity';
 import { CreateVoteDto } from './dto/create-vote.dto';
@@ -27,6 +26,8 @@ import { MemberMemo } from 'src/entity/member-memo.entity';
 import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
 import { Notice } from 'src/entity/notice.entity';
 import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice.repository';
+import { EmailService } from 'src/email/email.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class TeamService {
@@ -43,6 +44,8 @@ export class TeamService {
     private userService: UserService,
     private studyService: StudyService,
     private lectureService: LectureService,
+    private emailService: EmailService,
+    private jwtService: JwtService,
   ) {}
 
   async createTeam(userIdx: number, createTeamDto: CreateTeamDto, membersIdx: number[]): Promise<Team> {
@@ -59,8 +62,14 @@ export class TeamService {
     const members = await this.userService.findAllByIdx(membersIdx);
 
     await this.memberRepository.insertMembers(team, members, leader);
-    // TODO: 초대메일 로직 추가(메일 수락시 UserTeam.status 'W' => 'Y')
+    members.forEach((member) => {
+      const jwt = this.jwtService.sign({
+        teamIdx: team.teamIdx,
+        userIdx: member.userIdx,
+      });
 
+      this.emailService.sendMailInviteTeam(member.email, `https://api.match-on.team/teams/join?t=${jwt}`, team.name);
+    });
     return team;
   }
 
@@ -122,10 +131,26 @@ export class TeamService {
     return deleteResult;
   }
 
+  async joinTeam(jwt: string): Promise<any> {
+    const payload: any = this.jwtService.decode(jwt);
+    const member = await this.memberRepository
+      .createQueryBuilder('m')
+      .where({ user: { userIdx: payload.userIdx }, team: { teamIdx: payload.teamIdx } })
+      .select(['m.memberIdx', 'm.status'])
+      .getOne();
+    await this.updateMember(member.memberIdx, { status: 'Y' });
+  }
+
   async createMember(teamIdx: number, userIdx: number): Promise<InsertResult> {
     const user = await this.userService.findOneByIdx(userIdx);
+    const team = await this.readTeam(teamIdx);
     const result = await this.memberRepository.insertMember({ teamIdx }, user);
-    //TODO: 초대 메일 로직
+    const jwt = this.jwtService.sign({
+      teamIdx: teamIdx,
+      userIdx: user.userIdx,
+    });
+
+    this.emailService.sendMailInviteTeam(user.email, `https://api.match-on.team/teams/join?t=${jwt}`, team.name);
     return result;
   }
 
@@ -182,9 +207,8 @@ export class TeamService {
     return member;
   }
 
-  async updateMember(memberIdx: number, updateMemberData: UpdateMemeberDto): Promise<UpdateResult> {
+  async updateMember(memberIdx: number, updateMemberData: object): Promise<UpdateResult> {
     const updateResult = await this.memberRepository.update(memberIdx, updateMemberData);
-    //TODO: 메모 추가
     return updateResult;
   }
 

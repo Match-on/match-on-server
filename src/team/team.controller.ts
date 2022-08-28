@@ -10,6 +10,7 @@ import {
   UseGuards,
   Delete,
   ValidationPipe,
+  Redirect,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
@@ -68,6 +69,13 @@ export class TeamController {
     } else {
       return errResponse(baseResponse.ACCESS_DENIED);
     }
+  }
+
+  @Get('/join')
+  @Redirect('https://match-on.team')
+  async joinTeam(@Query('t') jwt: string): Promise<object> {
+    await this.teamService.joinTeam(jwt);
+    return;
   }
 
   @UseGuards(AuthGuard('jwt'))

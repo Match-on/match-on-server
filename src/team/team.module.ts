@@ -11,6 +11,9 @@ import { TeamService } from './team.service';
 import { ScheduleRepository } from 'src/repository/schedule.repository';
 import { NoteCommentRepository, NoteRepository } from 'src/repository/note.repository';
 import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice.repository';
+import { EmailModule } from 'src/email/email.module';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from 'src/auth/constants';
 
 @Module({
   imports: [
@@ -28,6 +31,11 @@ import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice
     UserModule,
     StudyModule,
     LectureModule,
+    EmailModule,
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '365d' },
+    }),
   ],
   controllers: [TeamController],
   providers: [TeamService],

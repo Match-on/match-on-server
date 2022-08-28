@@ -8,4 +8,7 @@ export class UpdateMemeberDto {
   @IsString()
   @Optional()
   readonly detail: string;
+  @IsString()
+  @Optional()
+  readonly status: string;
 }
