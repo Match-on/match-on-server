@@ -85,6 +85,9 @@ export class TeamController {
     } else if (type == 'main') {
       // TODO: 팀 메인정보
       return response(baseResponse.SUCCESS, {});
+    } else if (type == 'id') {
+      const id = await this.teamService.readTeamId(teamIdx);
+      return response(baseResponse.SUCCESS, { id });
     } else {
       return errResponse(baseResponse.ACCESS_DENIED);
     }

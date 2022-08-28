@@ -107,6 +107,10 @@ export class TeamService {
     const teamProfile = await this.teamRepository.findTeamWithMembers(teamIdx);
     return teamProfile;
   }
+  async readTeamId(teamIdx: number): Promise<any> {
+    const team = await this.teamRepository.findOne({ teamIdx });
+    return team.id;
+  }
 
   async updateTeam(teamIdx: number, updateTeamData: UpdateTeamDto): Promise<UpdateResult> {
     const updateResult = await this.teamRepository.update(teamIdx, updateTeamData);
