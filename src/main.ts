@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 
@@ -22,6 +23,8 @@ async function bootstrap() {
     }),
   );
   if (process.env.NODE_ENV == 'dev') app.use(LoggerMiddleware);
+  app.useWebSocketAdapter(new IoAdapter(app));
+
   await app.listen(3000);
 }
 bootstrap();

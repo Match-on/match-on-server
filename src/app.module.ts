@@ -11,6 +11,7 @@ import { UnivModule } from './univ/univ.module';
 import { EmailModule } from './email/email.module';
 import { LectureModule } from './lecture/lecture.module';
 import { StudyModule } from './study/study.module';
+import { VideoGateway } from './gateway/video.gateway';
 
 @Module({
   imports: [
@@ -53,6 +54,6 @@ import { StudyModule } from './study/study.module';
     StudyModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, VideoGateway],
 })
 export class AppModule {}
