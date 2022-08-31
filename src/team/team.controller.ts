@@ -491,7 +491,9 @@ export class TeamController {
     )
     query: ReadScheduleDto,
   ): Promise<object> {
-    const schedules = await this.teamService.readSchedules(user.userIdx, teamIdx, query);
+    let schedules;
+    if (!query.day) schedules = await this.teamService.readSchedulesMonth(user.userIdx, teamIdx, query);
+    else schedules = await this.teamService.readSchedulesDay(user.userIdx, teamIdx, query);
     return response(baseResponse.SUCCESS, schedules);
   }
 

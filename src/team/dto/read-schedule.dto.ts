@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class ReadScheduleDto {
   @IsNotEmpty()
@@ -10,4 +10,8 @@ export class ReadScheduleDto {
   @IsNumber()
   @Type(() => Number)
   readonly month: number;
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  readonly day: number;
 }

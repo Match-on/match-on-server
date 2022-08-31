@@ -11,7 +11,18 @@ export class ScheduleRepository extends Repository<Schedule> {
       .execute();
     return result;
   }
-  async findSchedules(teamIdx: number, year: number, month: number): Promise<any> {
+  async findSchedulesDay(teamIdx: number, year: number, month: number, day: number): Promise<any> {
+    const targetDate = new Date(year, month - 1, day, 10, 0, 0, 0);
+    const result = await this.createQueryBuilder('s')
+      .leftJoin('s.member', 'm')
+      .where({ team: { teamIdx } })
+      .andWhere(`DATE(s.endTime) >= DATE(:target) AND DATE(s.startTime) <= DATE(:target)`, { target: targetDate })
+      .select(['s.scheduleIdx', 's.title', 's.startTime', 's.endTime', 's.color', 'm.name'])
+      .orderBy({ startTime: 'ASC', endTime: 'ASC' })
+      .getMany();
+    return result;
+  }
+  async findSchedulesMonth(teamIdx: number, year: number, month: number): Promise<any> {
     const result = await this.createQueryBuilder('s')
       .leftJoin('s.member', 'm')
       .where({ team: { teamIdx } })

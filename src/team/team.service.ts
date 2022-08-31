@@ -588,11 +588,22 @@ export class TeamService {
     return result;
   }
 
-  async readSchedules(userIdx: number, teamIdx: number, query: { year: number; month: number }): Promise<any> {
+  async readSchedulesMonth(userIdx: number, teamIdx: number, query: { year: number; month: number }): Promise<any> {
     await this.readTeam(teamIdx);
     await this.readMemberWithoutIdx(userIdx, teamIdx);
 
-    const result = await this.scheduleRepository.findSchedules(teamIdx, query.year, query.month);
+    const result = await this.scheduleRepository.findSchedulesMonth(teamIdx, query.year, query.month);
+    return result;
+  }
+  async readSchedulesDay(
+    userIdx: number,
+    teamIdx: number,
+    query: { year: number; month: number; day: number },
+  ): Promise<any> {
+    await this.readTeam(teamIdx);
+    await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const result = await this.scheduleRepository.findSchedulesDay(teamIdx, query.year, query.month, query.day);
     return result;
   }
 
