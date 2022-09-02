@@ -10,6 +10,8 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { DriveComment } from './drive-comment.entity';
+import { Drive } from './drive.entity';
 import { MemberMemo } from './member-memo.entity';
 import { NoteComment } from './note-comment.entity';
 import { NoteTask } from './note-task.entity';
@@ -76,4 +78,11 @@ export class Member {
 
   @OneToMany(() => MemberMemo, (memo) => memo.member)
   memos: MemberMemo[];
+
+  @OneToMany(() => Drive, (drive) => drive.member)
+  drives: Drive[];
+  @OneToMany(() => DriveComment, (comment) => comment.member)
+  driveComments: DriveComment[];
+  @ManyToMany(() => Drive, (drive) => drive.hits)
+  driveHits: Drive[];
 }

@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DriveFolder } from './drive-folder.entity';
+import { Drive } from './drive.entity';
 import { Member } from './member.entity';
 import { Note } from './note.entity';
 import { Notice } from './notice.entity';
@@ -51,4 +53,8 @@ export class Team {
   votes: Vote[];
   @OneToMany(() => Notice, (notice) => notice.team)
   notices: Notice[];
+  @OneToMany(() => Drive, (drive) => drive.team)
+  drives: Drive[];
+  @OneToMany(() => DriveFolder, (folder) => folder.team)
+  folders: Drive[];
 }

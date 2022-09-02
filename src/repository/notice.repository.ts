@@ -79,7 +79,7 @@ export class NoticeRepository extends Repository<Notice> {
         'ccm.profileUrl',
       ])
       .addSelect(`if(n.memberMemberIdx = ${memberIdx}, true, false) as isMe`)
-
+      .orderBy({ 'nc.createdAt': 'ASC', 'cc.createdAt': 'ASC' })
       .getRawAndEntities();
     return notices;
   }

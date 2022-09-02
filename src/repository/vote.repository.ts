@@ -94,6 +94,7 @@ export class VoteRepository extends Repository<Vote> {
       ])
       .addSelect(`if(v.memberMemberIdx = ${memberIdx}, true, false) as isMe`)
       .addSelect(`CONCAT((${choicesQb.getQuery()}), '/', (${memberQb.getQuery()})) as count`)
+      .orderBy({ 'vc.createdAt': 'ASC', 'cc.createdAt': 'ASC' })
       .getRawAndEntities();
     return result;
   }

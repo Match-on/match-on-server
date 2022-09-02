@@ -17,6 +17,8 @@ import { baseResponse } from 'src/config/baseResponseStatus';
 import { errResponse, response } from 'src/config/response';
 import { User } from 'src/user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { CreateDriveFolderDto } from './dto/create-drive-folder.dto';
+import { CreateDriveDto } from './dto/create-drive.dto';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { CreateMemeberDto } from './dto/create-member.dto';
 import { CreateMemoDto } from './dto/create-memo.dto';
@@ -28,9 +30,12 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { CreateVoteChoiceDto } from './dto/create-vote-choice.dto';
 import { CreateVoteVoteDto } from './dto/create-vote-vote.dto';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { ReadDriveDto } from './dto/read-drive.dto';
 import { ReadScheduleDto } from './dto/read-schedule.dto';
 import { ReadVoteDto } from './dto/read-vote.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { UpdateDriveFolderDto } from './dto/update-drive-folder.dto';
+import { UpdateDriveDto } from './dto/update-drive.dto';
 import { UpdateMemeberDto } from './dto/update-member.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
@@ -516,6 +521,135 @@ export class TeamController {
     @Body() updateScheduleData: UpdateScheduleDto,
   ): Promise<object> {
     await this.teamService.updateSchedule(scheduleIdx, updateScheduleData);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/drives')
+  async postDrive(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createDriveData: CreateDriveDto,
+  ): Promise<object> {
+    const { folderIdx, files, ...data } = createDriveData;
+    await this.teamService.createDrive(user.userIdx, teamIdx, data, files, folderIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:teamIdx/drives/folders')
+  async postDriveFolder(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Body() createDriveFolderData: CreateDriveFolderDto,
+  ): Promise<object> {
+    const { name, parentIdx } = createDriveFolderData;
+    await this.teamService.createDriveFolder(user.userIdx, teamIdx, name, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/drives')
+  async getDrives(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    query: ReadDriveDto,
+  ): Promise<object> {
+    const { keyword } = query;
+
+    const result = await this.teamService.readDrivesWithKeyword(user.userIdx, teamIdx, keyword);
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/drives/folders/:folderIdx')
+  async getFolder(
+    @User() user: any,
+    @Param('teamIdx', ParseIntPipe) teamIdx: number,
+    @Param('folderIdx', ParseIntPipe) folderIdx: number,
+  ): Promise<object> {
+    folderIdx = folderIdx == 0 ? null : folderIdx;
+    const result = await this.teamService.readFolder(user.userIdx, teamIdx, folderIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
+  // @UseGuards(AuthGuard('jwt'))
+  // @Patch('/:teamIdx/drives/folders/:folderIdx')
+  // async patchFolder(
+  //   @User() user: any,
+  //   @Param('teamIdx', ParseIntPipe) teamIdx: number,
+  //   @Param('folderIdx', ParseIntPipe) folderIdx: number,
+  //   @Body() updateDriveFolderData: UpdateDriveFolderDto,
+  // ): Promise<object> {
+  //   const result = await this.teamService.updateFolder(user.userIdx, teamIdx, folderIdx, updateDriveFolderData);
+  //   return response(baseResponse.SUCCESS, result);
+  // }
+  // @UseGuards(AuthGuard('jwt'))
+  // @Delete('/:teamIdx/drives/folders/:folderIdx')
+  // async deleteFolder(
+  //   @User() user: any,
+  //   @Param('teamIdx', ParseIntPipe) teamIdx: number,
+  //   @Param('folderIdx', ParseIntPipe) folderIdx: number,
+  // ): Promise<object> {
+  //   folderIdx = folderIdx == 0 ? null : folderIdx;
+  //   const result = await this.teamService.deleteFolder(user.userIdx, teamIdx, folderIdx);
+  //   return response(baseResponse.SUCCESS, result);
+  // }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/drives/:driveIdx')
+  async getDrive(@User() user: any, @Param('driveIdx', ParseIntPipe) driveIdx: number): Promise<object> {
+    const result = await this.teamService.readDrive(user.userIdx, driveIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/drives/:driveIdx')
+  async patchDrive(
+    @User() user: any,
+    @Param('driveIdx', ParseIntPipe) driveIdx: number,
+    @Body() updateDriveData: UpdateDriveDto,
+  ): Promise<object> {
+    await this.teamService.updateDrive(user.userIdx, driveIdx, updateDriveData);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/drives/:driveIdx')
+  async deleteDrive(@User() user: any, @Param('driveIdx', ParseIntPipe) driveIdx: number): Promise<object> {
+    await this.teamService.deleteDrive(user.userIdx, driveIdx);
+    return response(baseResponse.SUCCESS);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/drives/:driveIdx/comments')
+  async postDriveComment(
+    @User() user: any,
+    @Param('driveIdx', ParseIntPipe) driveIdx: number,
+    @Body() createCommentData: CreateCommentDto,
+  ): Promise<object> {
+    const { comment, parentIdx } = createCommentData;
+    await this.teamService.createDriveComment(user.userIdx, driveIdx, comment, parentIdx);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/drives/comments/:commentIdx')
+  async patchDriveComment(
+    @User() user: any,
+    @Param('commentIdx', ParseIntPipe) commentIdx: number,
+    @Body() updateCommentData: UpdateCommentDto,
+  ): Promise<object> {
+    await this.teamService.updateDriveComment(user.userIdx, commentIdx, updateCommentData.comment);
+    return response(baseResponse.SUCCESS);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/drives/comments/:commentIdx')
+  async deleteDriveComment(@User() user: any, @Param('commentIdx', ParseIntPipe) commentIdx: number): Promise<object> {
+    await this.teamService.deleteDriveComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
 }

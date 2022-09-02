@@ -14,6 +14,7 @@ import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice
 import { EmailModule } from 'src/email/email.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/auth/constants';
+import { DriveCommentRepository, DriveFolderRepository, DriveRepository } from 'src/repository/drive.repository';
 
 @Module({
   imports: [
@@ -26,6 +27,9 @@ import { jwtConstants } from 'src/auth/constants';
       NoteCommentRepository,
       NoticeRepository,
       NoticeCommentRepository,
+      DriveRepository,
+      DriveCommentRepository,
+      DriveFolderRepository,
     ]),
     TypeOrmModule.forFeature([MemberRepository]),
     UserModule,

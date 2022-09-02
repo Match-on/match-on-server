@@ -27,7 +27,9 @@ export class NoteRepository extends Repository<Note> {
       .addSelect('if(n_h.memberMemberIdx IS NULL,true,false) as isNew')
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`group_concat(f.url separator ",") as files`)
-      .groupBy('noteIdx');
+      .groupBy('noteIdx')
+      .orderBy({ 'n.createdAt': 'DESC', 'n.driveIdx': 'DESC' });
+
     if (!!keyword) {
       qb.andWhere([{ title: Like(`%${keyword}%`) }, { body: Like(`%${keyword}%`) }]);
     }
@@ -73,7 +75,7 @@ export class NoteRepository extends Repository<Note> {
         'ccm.profileUrl',
       ])
       .addSelect(`if(n.memberMemberIdx = ${memberIdx}, true, false) as isMe`)
-
+      .orderBy({ 'nc.createdAt': 'ASC', 'cc.createdAt': 'ASC' })
       .getRawAndEntities();
     return notes;
   }

@@ -28,6 +28,10 @@ import { Notice } from 'src/entity/notice.entity';
 import { NoticeCommentRepository, NoticeRepository } from 'src/repository/notice.repository';
 import { EmailService } from 'src/email/email.service';
 import { JwtService } from '@nestjs/jwt';
+import { DriveCommentRepository, DriveFolderRepository, DriveRepository } from 'src/repository/drive.repository';
+import { Drive } from 'src/entity/drive.entity';
+import { DriveFolder } from 'src/entity/drive-folder.entity';
+import { DriveFile } from 'src/entity/drive-file.entity';
 
 @Injectable()
 export class TeamService {
@@ -40,6 +44,9 @@ export class TeamService {
     @InjectRepository(NoteCommentRepository) private noteCommentRepository: NoteCommentRepository,
     @InjectRepository(NoticeRepository) private noticeRepository: NoticeRepository,
     @InjectRepository(NoticeCommentRepository) private noticeCommentRepository: NoticeCommentRepository,
+    @InjectRepository(DriveRepository) private driveRepository: DriveRepository,
+    @InjectRepository(DriveCommentRepository) private driveCommentRepository: DriveCommentRepository,
+    @InjectRepository(DriveFolderRepository) private driveFolderRepository: DriveFolderRepository,
     @InjectRepository(ScheduleRepository) private scheduleRepository: ScheduleRepository,
     private userService: UserService,
     private studyService: StudyService,
@@ -632,6 +639,162 @@ export class TeamService {
   }
   async deleteMemo(memoIdx: number): Promise<DeleteResult> {
     const deleteResult = await getRepository(MemberMemo).softDelete({ memoIdx });
+    return deleteResult;
+  }
+
+  async createDrive(
+    userIdx: number,
+    teamIdx: number,
+    data: { title: string; body: string },
+    files?: any[],
+    folderIdx?: number,
+  ): Promise<Drive> {
+    await this.readTeam(teamIdx);
+    const writer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+    const result = await this.driveRepository.insertDrive(writer, { teamIdx }, data, files, { folderIdx });
+    return result;
+  }
+  async createDriveFolder(userIdx: number, teamIdx: number, name: string, parentIdx?: number): Promise<DriveFolder> {
+    await this.readTeam(teamIdx);
+    await this.readMemberWithoutIdx(userIdx, teamIdx);
+    const result = await this.driveFolderRepository.insertDriveFolder({ teamIdx }, name, { folderIdx: parentIdx });
+    return result;
+  }
+
+  async createDriveHit(memberIdx: number, driveIdx: number): Promise<void> {
+    await this.driveRepository.upsertDriveHit(memberIdx, driveIdx);
+  }
+  async checkDrive(driveIdx: number, option?: object): Promise<Drive> {
+    const drive = await this.driveRepository.findOne(driveIdx, option);
+    if (!drive) {
+      return errResponse(baseResponse.NOT_EXIST_DRIVE);
+    }
+    return drive;
+  }
+  async readDrivesWithKeyword(userIdx: number, teamIdx: number, keyword: string): Promise<object> {
+    await this.readTeam(teamIdx);
+    const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const folders = await this.driveFolderRepository.findFoldersWithKeyword(teamIdx, keyword);
+    const drives = await this.driveRepository.findDrivesWithKeyword(teamIdx, viewer.memberIdx, keyword);
+    drives?.forEach((r) => {
+      r.files = r.files?.split(',') || [];
+    });
+    return { folders, drives };
+  }
+
+  async readFolder(userIdx: number, teamIdx: number, folderIdx?: number): Promise<object> {
+    await this.readTeam(teamIdx);
+    const viewer = await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const drives = await this.driveRepository.findDrivesByIdx(teamIdx, viewer.memberIdx, folderIdx);
+    const folders = await this.driveFolderRepository.findFoldersByIdx(teamIdx, folderIdx);
+    drives?.forEach((r) => {
+      r.files = r.files?.split(',') || [];
+    });
+    return { folders, drives };
+  }
+  async readDrive(userIdx: number, driveIdx: number): Promise<Drive> {
+    const drive = await this.checkDrive(driveIdx, { relations: ['team'] });
+    const viewer = await this.readMemberWithoutIdx(userIdx, drive.team.teamIdx);
+
+    await this.createDriveHit(viewer.memberIdx, driveIdx);
+
+    const result = await this.driveRepository.findDrive(viewer.memberIdx, driveIdx);
+    const raw = result.raw;
+    const entity = result.entities[0];
+
+    entity['writer'] = entity.member.name;
+    delete entity.member;
+    entity['isMe'] = raw[0].isMe;
+    if (!!entity.comments) {
+      entity.comments.forEach((comment) => {
+        comment['name'] = comment.member.name;
+        comment['profileUrl'] = comment.member.profileUrl;
+        comment['isMe'] = comment.member.memberIdx == viewer.memberIdx ? '1' : '0';
+
+        delete comment['member'];
+        comment.childComments.forEach((child) => {
+          child['name'] = child.member.name;
+          child['profileUrl'] = child.member.profileUrl;
+          child['isMe'] = child.member.memberIdx == viewer.memberIdx ? '1' : '0';
+          delete child['member'];
+        });
+      });
+    }
+
+    return entity;
+  }
+  async updateDrive(userIdx: number, driveIdx: number, updateDriveData: any): Promise<UpdateResult> {
+    const drive = await this.checkDrive(driveIdx, { relations: ['member', 'team'] });
+    const member = await this.readMemberWithoutIdx(userIdx, drive.team.teamIdx);
+    if (member.memberIdx != drive.member.memberIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+
+    const { files, folderIdx, ...driveData } = updateDriveData;
+    if (!!files) {
+      await this.deleteDriveFile(driveIdx);
+      await this.createDriveFile(driveIdx, files);
+    }
+    if (folderIdx != undefined) driveData['folder'] = folderIdx == 0 ? null : { folderIdx };
+
+    const updateResult = await this.driveRepository.update(driveIdx, driveData);
+    return updateResult;
+  }
+  async deleteDrive(userIdx: number, driveIdx: number): Promise<DeleteResult> {
+    const drive = await this.checkDrive(driveIdx, { relations: ['member', 'team'] });
+    const member = await this.readMemberWithoutIdx(userIdx, drive.team.teamIdx);
+    if (member.memberIdx != drive.member.memberIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+
+    const deleteResult = await this.driveRepository.softDelete({ driveIdx });
+    await this.deleteDriveFile(driveIdx);
+    return deleteResult;
+  }
+  async createDriveFile(driveIdx: number, files: any[]): Promise<void> {
+    const driveFileRepository = getRepository(DriveFile);
+    const fileData = [];
+    files.forEach((f) => fileData.push({ drive: { driveIdx }, ...f }));
+    await driveFileRepository.insert(fileData);
+  }
+  async deleteDriveFile(driveIdx: number): Promise<void> {
+    const driveFileRepository = getRepository(DriveFile);
+    await driveFileRepository.delete({ drive: { driveIdx } });
+  }
+
+  async checkDriveComment(commentIdx: number): Promise<{ userIdx: number; memberIdx: number }> {
+    const comment = await this.driveCommentRepository.findComment(commentIdx);
+    if (!comment) {
+      return errResponse(baseResponse.NOT_EXIST_DRIVE_COMMENT);
+    }
+    return comment;
+  }
+  async createDriveComment(userIdx: number, driveIdx: number, comment: string, parentIdx: number): Promise<void> {
+    const drive = await this.checkDrive(driveIdx, { relations: ['team'] });
+    const writer = await this.readMemberWithoutIdx(userIdx, drive.team.teamIdx);
+
+    if (parentIdx) {
+      await this.checkDriveComment(parentIdx);
+    }
+
+    await this.driveCommentRepository.insertComment(writer, drive, { comment }, { commentIdx: parentIdx });
+  }
+  async updateDriveComment(userIdx: number, commentIdx: number, comment: string): Promise<UpdateResult> {
+    const result = await this.checkDriveComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const updateResult = await this.driveCommentRepository.update(commentIdx, { comment });
+    return updateResult;
+  }
+  async deleteDriveComment(userIdx: number, commentIdx: number): Promise<DeleteResult> {
+    const result = await this.checkDriveComment(commentIdx);
+    if (result.userIdx != userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    const deleteResult = await this.driveCommentRepository.softDelete({ commentIdx });
     return deleteResult;
   }
 }
