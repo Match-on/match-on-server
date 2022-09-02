@@ -27,7 +27,7 @@ export class ScheduleRepository extends Repository<Schedule> {
       .leftJoin('s.member', 'm')
       .where({ team: { teamIdx } })
       .andWhere(
-        `(YEAR(s.endTime) = ${year} AND MONTH(s.endTime) = ${month}) OR (YEAR(s.startTime) = ${year} AND MONTH(s.startTime) = ${month})`,
+        `((YEAR(s.endTime) = ${year} AND MONTH(s.endTime) = ${month}) OR (YEAR(s.startTime) = ${year} AND MONTH(s.startTime) = ${month}))`,
       )
       .select(['s.scheduleIdx', 's.title', 's.startTime', 's.endTime', 's.color', 'm.name'])
       .orderBy({ startTime: 'ASC', endTime: 'ASC' })
