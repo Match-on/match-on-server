@@ -140,7 +140,7 @@ export class DriveFolderRepository extends Repository<DriveFolder> {
   async findFoldersWithKeyword(teamIdx: number, keyword: string): Promise<any> {
     const qb = this.createQueryBuilder('df')
       .where({ team: { teamIdx } })
-      .select(['name'])
+      .select(['folderIdx', 'name'])
       .leftJoin('df.drives', 'd')
       .addSelect('COUNT(d.driveIdx) as count')
       .groupBy('folderIdx')

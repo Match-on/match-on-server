@@ -53,11 +53,11 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   NOT_EXIST_NOTE: { "isSuccess": false, "code": 3023, "message": "존재하지 않는 회의록입니다." },
   NOT_EXIST_NOTE_COMMENT: { "isSuccess": false, "code": 3024, "message": "존재하지 않는 댓글입니다." },
   
-  NOT_EXIST_NOTICE: { "isSuccess": false, "code": 3023, "message": "존재하지 않는 회의록입니다." },
-  NOT_EXIST_NOTICE_COMMENT: { "isSuccess": false, "code": 3024, "message": "존재하지 않는 댓글입니다." },
+  NOT_EXIST_NOTICE: { "isSuccess": false, "code": 3025, "message": "존재하지 않는 공지사항입니다." },
+  NOT_EXIST_NOTICE_COMMENT: { "isSuccess": false, "code": 3026, "message": "존재하지 않는 댓글입니다." },
   
-  NOT_EXIST_DRIVE: { "isSuccess": false, "code": 3025, "message": "존재하지 않는 드라이브입니다." },
-  NOT_EXIST_DRIVE_COMMENT: { "isSuccess": false, "code": 3026, "message": "존재하지 않는 댓글입니다." },
+  NOT_EXIST_DRIVE: { "isSuccess": false, "code": 3027, "message": "존재하지 않는 드라이브입니다." },
+  NOT_EXIST_DRIVE_COMMENT: { "isSuccess": false, "code": 3028, "message": "존재하지 않는 댓글입니다." },
 
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
