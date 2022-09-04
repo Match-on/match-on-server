@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LectureModule } from 'src/lecture/lecture.module';
 import { MemberRepository } from 'src/repository/member.repository';
@@ -32,7 +32,6 @@ import { DriveCommentRepository, DriveFolderRepository, DriveRepository } from '
       DriveFolderRepository,
     ]),
     TypeOrmModule.forFeature([MemberRepository]),
-    UserModule,
     StudyModule,
     LectureModule,
     EmailModule,
@@ -40,8 +39,10 @@ import { DriveCommentRepository, DriveFolderRepository, DriveRepository } from '
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '365d' },
     }),
+    forwardRef(() => UserModule),
   ],
   controllers: [TeamController],
   providers: [TeamService],
+  exports: [TeamService],
 })
 export class TeamModule {}

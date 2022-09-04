@@ -652,4 +652,11 @@ export class TeamController {
     await this.teamService.deleteDriveComment(user.userIdx, commentIdx);
     return response(baseResponse.SUCCESS);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:teamIdx/main')
+  async getTeamMain(@User() user: any, @Param('teamIdx', ParseIntPipe) teamIdx: number): Promise<object> {
+    const result = await this.teamService.readTeamMain(user.userIdx, teamIdx);
+    return response(baseResponse.SUCCESS, result);
+  }
 }

@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { baseResponse } from 'src/config/baseResponseStatus';
@@ -10,6 +22,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { SendEmailDto } from './dto/send-email.dto';
 import { UserService } from './user.service';
 import { VerifyCodeDto } from './dto/verify-code.dto';
+import { ReadScheduleDto } from './dto/read-schedule.dto';
 
 @Controller('users')
 export class UserController {
@@ -141,5 +154,40 @@ export class UserController {
     } else {
       return errResponse(baseResponse.DB_ERROR);
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:userIdx/main')
+  async getUserMain(@User() user: any, @Param('userIdx', ParseIntPipe) userIdx: number) {
+    if (user.userIdx !== userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+
+    const result = await this.userService.getUserMain(userIdx);
+
+    return response(baseResponse.SUCCESS, result);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:userIdx/schedules')
+  async getSchedules(
+    @User() user: any,
+    @Param('userIdx', ParseIntPipe) userIdx: number,
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    query: ReadScheduleDto,
+  ): Promise<object> {
+    if (user.userIdx !== userIdx) {
+      return errResponse(baseResponse.ACCESS_DENIED);
+    }
+    let schedules;
+    if (!query.day) schedules = await this.userService.readSchedulesMonth(userIdx, query);
+    else schedules = await this.userService.readSchedulesDay(userIdx, query);
+    return response(baseResponse.SUCCESS, schedules);
   }
 }

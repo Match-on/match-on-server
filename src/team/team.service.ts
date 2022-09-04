@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MemberRepository } from 'src/repository/member.repository';
 import { TeamRepository } from 'src/repository/team.repository';
@@ -6,7 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from 'src/entity/team.entity';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { DeleteResult, getRepository, InsertResult, UpdateResult } from 'typeorm';
+import { DeleteResult, getManager, getRepository, InsertResult, UpdateResult } from 'typeorm';
 import { errResponse } from 'src/config/response';
 import { baseResponse } from 'src/config/baseResponseStatus';
 import { Note } from 'src/entity/note.entity';
@@ -48,11 +48,11 @@ export class TeamService {
     @InjectRepository(DriveCommentRepository) private driveCommentRepository: DriveCommentRepository,
     @InjectRepository(DriveFolderRepository) private driveFolderRepository: DriveFolderRepository,
     @InjectRepository(ScheduleRepository) private scheduleRepository: ScheduleRepository,
-    private userService: UserService,
     private studyService: StudyService,
-    private lectureService: LectureService,
     private emailService: EmailService,
     private jwtService: JwtService,
+    @Inject(forwardRef(() => LectureService)) private lectureService: LectureService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
   ) {}
 
   async createTeam(userIdx: number, createTeamDto: CreateTeamDto, membersIdx: number[]): Promise<Team> {
@@ -613,6 +613,21 @@ export class TeamService {
     const result = await this.scheduleRepository.findSchedulesDay(teamIdx, query.year, query.month, query.day);
     return result;
   }
+  async readDDay(teamIdx: number, query: { year: number; month: number; day: number }): Promise<any> {
+    const result = await this.scheduleRepository.findDDay(teamIdx, query.year, query.month, query.day);
+    return result;
+  }
+  async readSchedulesForUser(teamIdx: number[], query: { year: number; month: number; day: number }): Promise<any> {
+    const resultMonth = await this.readSchedulesMonthForUser(teamIdx, { year: query.year, month: query.month });
+    const resultDay = await this.readSchedulesDayForUser(teamIdx, query);
+    return { month: resultMonth, today: resultDay };
+  }
+  async readSchedulesMonthForUser(teamIdx: number[], query: { year: number; month: number }): Promise<any> {
+    return await this.scheduleRepository.findSchedulesMonthForUser(teamIdx, query.year, query.month);
+  }
+  async readSchedulesDayForUser(teamIdx: number[], query: { year: number; month: number; day: number }): Promise<any> {
+    return await this.scheduleRepository.findSchedulesDayForUser(teamIdx, query.year, query.month, query.day);
+  }
 
   async readSchedulesWithKeyword(userIdx: number, teamIdx: number, keyword: string): Promise<any> {
     await this.readTeam(teamIdx);
@@ -796,5 +811,57 @@ export class TeamService {
     }
     const deleteResult = await this.driveCommentRepository.softDelete({ commentIdx });
     return deleteResult;
+  }
+
+  async readTeamMain(userIdx: number, teamIdx: number): Promise<any> {
+    await this.readTeam(teamIdx);
+    await this.readMemberWithoutIdx(userIdx, teamIdx);
+
+    const noti = await this.findNoti(teamIdx);
+    const now = new Date();
+    const resultMonth = await this.readSchedulesMonth(userIdx, teamIdx, {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+    });
+    const resultDay = await this.readSchedulesDay(userIdx, teamIdx, {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      day: now.getDate(),
+    });
+    const schedule = { month: resultMonth, today: resultDay };
+    const dDay = await this.readDDay(teamIdx, {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      day: now.getDate(),
+    });
+    const members = await this.readMemberAll(userIdx, teamIdx);
+    return { noti, schedule, dDay, members };
+  }
+  async findNoti(teamIdx: number): Promise<any> {
+    const note = this.noteRepository
+      .createQueryBuilder('n')
+      .leftJoin('n.team', 't')
+      .leftJoin('n.member', 'm')
+      .where(`n.teamTeamIdx = ${teamIdx}`)
+      .select(['n.noteIdx as `index`', "'note' as type", 'm.name as writer', 'n.createdAt as createdAt']);
+    const vote = this.voteRepository
+      .createQueryBuilder('v')
+      .where(`v.teamTeamIdx = ${teamIdx}`)
+      .leftJoin('v.team', 't')
+      .leftJoin('v.member', 'm')
+      .select(['v.voteIdx as `index`', "'vote' as type", 'm.name as writer', 'v.createdAt as createdAt']);
+    const notice = this.noticeRepository
+      .createQueryBuilder('n')
+      .where(`n.teamTeamIdx = ${teamIdx}`)
+      .leftJoin('n.team', 't')
+      .leftJoin('n.member', 'm')
+      .select(['n.noticeIdx as `index`', "'notice' as type", 'm.name as writer', 'n.createdAt as createdAt']);
+    const result = await getManager().query(`
+    SELECT A.*
+    FROM((${note.getQuery()}) UNION (${vote.getQuery()}) UNION (${notice.getQuery()})) A
+    ORDER BY A.createdAt DESC
+    LIMIT 5
+    `);
+    return result;
   }
 }

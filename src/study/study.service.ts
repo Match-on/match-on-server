@@ -7,7 +7,6 @@ import { StudyCategory } from 'src/entity/study-category.entity';
 import { Study } from 'src/entity/study.entity';
 import { StudyCommentRepository } from 'src/repository/study-comment.repository';
 import { StudyRepository } from 'src/repository/study.repository';
-import { UserService } from 'src/user/user.service';
 import { createQueryBuilder, DeleteResult, UpdateResult } from 'typeorm';
 import { ReadStudyDto } from './dto/read-study.dto';
 
@@ -16,7 +15,6 @@ export class StudyService {
   constructor(
     @InjectRepository(StudyRepository) private studyRepository: StudyRepository,
     @InjectRepository(StudyCommentRepository) private studyCommentRepository: StudyCommentRepository,
-    private userService: UserService,
   ) {}
 
   async readFilter(): Promise<{ categories: any[]; regions: any[] }> {

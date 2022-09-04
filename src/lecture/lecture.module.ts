@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LectureRepository } from 'src/repository/lecture.repository';
 import { LectureService } from './lecture.service';
@@ -10,7 +10,7 @@ import { LecturePostCommentRepository } from 'src/repository/lecture-post-commen
 @Module({
   imports: [
     TypeOrmModule.forFeature([LectureRepository, LecturePostRepository, LecturePostCommentRepository]),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   providers: [LectureService],
   controllers: [LectureController],

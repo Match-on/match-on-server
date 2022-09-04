@@ -27,6 +27,7 @@ import { Study } from './study.entity';
 import { StudyHit } from './study-hit.entity';
 import { StudyComment } from './study-comment.entity';
 import { StudyResume } from './study-resume.entity';
+import { Chat } from './chat.entity';
 
 @Entity()
 export class User {
@@ -101,6 +102,11 @@ export class User {
   studyComments: StudyComment[];
   @OneToMany(() => StudyResume, (resume) => resume.user)
   studyResumes: StudyResume[];
+
+  @OneToMany(() => Chat, (chat) => chat.sender)
+  chatsSend: Chat[];
+  @OneToMany(() => Chat, (chat) => chat.receiver)
+  chatsReceive: Chat[];
 
   @BeforeInsert()
   @BeforeUpdate()

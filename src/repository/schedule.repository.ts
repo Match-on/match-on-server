@@ -34,6 +34,41 @@ export class ScheduleRepository extends Repository<Schedule> {
       .getMany();
     return result;
   }
+  async findDDay(teamIdx: number, year: number, month: number, day: number): Promise<any> {
+    const targetDate = new Date(year, month - 1, day, 10, 0, 0, 0);
+    const result = await this.createQueryBuilder('s')
+      .where({ team: { teamIdx } })
+      .andWhere(`DATE(s.startTime) >= DATE(:target)`, { target: targetDate })
+      .select(['s.scheduleIdx as scheduleIdx', 's.title as title', 's.startTime as startTime'])
+      .addSelect('DATEDIFF(DATE(s.startTime),DATE(:target)) as `dDay`')
+      .setParameter('target', targetDate)
+      .orderBy({ startTime: 'ASC', endTime: 'ASC' })
+      .getRawMany();
+    return result;
+  }
+  async findSchedulesDayForUser(teams: number[], year: number, month: number, day: number): Promise<any> {
+    const targetDate = new Date(year, month - 1, day, 10, 0, 0, 0);
+    const result = await this.createQueryBuilder('s')
+      .leftJoin('s.member', 'm')
+      .where(`s.teamTeamIdx in (${teams.join(',')})`)
+      .andWhere(`DATE(s.endTime) >= DATE(:target) AND DATE(s.startTime) <= DATE(:target)`, { target: targetDate })
+      .select(['s.scheduleIdx', 's.title', 's.startTime', 's.endTime', 's.color', 'm.name'])
+      .orderBy({ startTime: 'ASC', endTime: 'ASC' })
+      .getMany();
+    return result;
+  }
+  async findSchedulesMonthForUser(teams: number[], year: number, month: number): Promise<any> {
+    const result = await this.createQueryBuilder('s')
+      .leftJoin('s.member', 'm')
+      .where(`s.teamTeamIdx in (${teams.join(',')})`)
+      .andWhere(
+        `((YEAR(s.endTime) = ${year} AND MONTH(s.endTime) = ${month}) OR (YEAR(s.startTime) = ${year} AND MONTH(s.startTime) = ${month}))`,
+      )
+      .select(['s.scheduleIdx', 's.title', 's.startTime', 's.endTime', 's.color', 'm.name'])
+      .orderBy({ startTime: 'ASC', endTime: 'ASC' })
+      .getMany();
+    return result;
+  }
   async findSchedulesWithKeyword(teamIdx: number, keyword: string): Promise<any> {
     const result = await this.createQueryBuilder('s')
       .leftJoin('s.member', 'm')
