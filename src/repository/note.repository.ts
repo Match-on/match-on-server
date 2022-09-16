@@ -28,7 +28,7 @@ export class NoteRepository extends Repository<Note> {
       .addSelect(`(${commentQb.getQuery()}) as commentCount`)
       .addSelect(`group_concat(f.url separator ",") as files`)
       .groupBy('noteIdx')
-      .orderBy({ 'n.createdAt': 'DESC', 'n.driveIdx': 'DESC' });
+      .orderBy({ 'n.createdAt': 'DESC', 'n.noteIdx': 'DESC' });
 
     if (!!keyword) {
       qb.andWhere([{ title: Like(`%${keyword}%`) }, { body: Like(`%${keyword}%`) }]);
