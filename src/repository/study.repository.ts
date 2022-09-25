@@ -77,7 +77,7 @@ export class StudyRepository extends Repository<Study> {
     if (!!regionIdx) {
       whereCondition['region'] = In(regionIdx);
     }
-    const qb = await this.createQueryBuilder('s')
+    const qb = this.createQueryBuilder('s')
       .leftJoin('s.category', 'c')
       .leftJoin('s.region', 'r')
       .where(whereCondition)
@@ -94,7 +94,7 @@ export class StudyRepository extends Repository<Study> {
       qb.andWhere(cursorOption + ' < ' + `'${cursor}'`);
     }
 
-    const posts = qb.getRawMany();
+    const posts = await qb.getRawMany();
     return posts;
   }
   async findByIdx(userIdx: number, studyIdx: number): Promise<{ entities: Study[]; raw: any[] }> {

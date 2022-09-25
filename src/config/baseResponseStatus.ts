@@ -59,6 +59,12 @@ export const baseResponse: {[k:string]:BaseResponse} = {
   NOT_EXIST_DRIVE: { "isSuccess": false, "code": 3027, "message": "존재하지 않는 드라이브입니다." },
   NOT_EXIST_DRIVE_COMMENT: { "isSuccess": false, "code": 3028, "message": "존재하지 않는 댓글입니다." },
 
+  NOT_EXIST_ACTIVITY: { "isSuccess": false, "code": 3029, "message": "존재하지 않는 공모전입니다." },
+  NOT_EXIST_ACTIVITY_COMMENT: { "isSuccess": false, "code": 3030, "message": "존재하지 않는 댓글입니다." },
+  NOT_EXIST_ACTIVITY_POST: { "isSuccess": false, "code": 3031, "message": "존재하지 않는 공모전 모집글입니다." },
+  NOT_EXIST_ACTIVITY_POST_COMMENT: { "isSuccess": false, "code": 3032, "message": "존재하지 않는 댓글입니다." },
+  
+
   CODE_VERIFICATION_FAILURE: { "isSuccess": false, "code": 3400, "message": "이메일 인증번호 검증 실패" },
   ACCESS_DENIED: { "isSuccess": false, "code": 3401, "message": "접근할 수 없는 권한입니다." },
   // SIGNIN_INACTIVE_ACCOUNT: { "isSuccess": false, "code": 3007, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },

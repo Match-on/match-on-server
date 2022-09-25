@@ -28,6 +28,13 @@ import { StudyHit } from './study-hit.entity';
 import { StudyComment } from './study-comment.entity';
 import { StudyResume } from './study-resume.entity';
 import { Chat } from './chat.entity';
+import { Activity } from './activity.entity';
+import { ActivityPost } from './activity-post.entity';
+import { ActivityPostHit } from './activity-post-hit.entity';
+import { ActivityPostComment } from './activity-post-comment.entity';
+import { ActivityPostResume } from './activity-post-resume.entity';
+import { ActivityHit } from './activity-hit.entity';
+import { ActivityComment } from './activity-comment.entity';
 
 @Entity()
 export class User {
@@ -102,6 +109,22 @@ export class User {
   studyComments: StudyComment[];
   @OneToMany(() => StudyResume, (resume) => resume.user)
   studyResumes: StudyResume[];
+
+  @ManyToMany(() => Activity, (activity) => activity.favorites)
+  @JoinTable({ name: 'favorite_activity' })
+  favoriteActivity: Activity[];
+  @OneToMany(() => ActivityHit, (hit) => hit.user)
+  activityHits: ActivityHit[];
+  @OneToMany(() => ActivityComment, (comment) => comment.user)
+  activityComments: ActivityComment[];
+  @OneToMany(() => ActivityPost, (post) => post.user)
+  activityPosts: ActivityPost[];
+  @OneToMany(() => ActivityPostHit, (hit) => hit.user)
+  activityPostHits: ActivityPostHit[];
+  @OneToMany(() => ActivityPostComment, (comment) => comment.user)
+  activityPostComments: ActivityPostComment[];
+  @OneToMany(() => ActivityPostResume, (resume) => resume.user)
+  activityPostResumes: ActivityPostResume[];
 
   @OneToMany(() => Chat, (chat) => chat.sender)
   chatsSend: Chat[];

@@ -12,6 +12,7 @@ import { EmailModule } from './email/email.module';
 import { LectureModule } from './lecture/lecture.module';
 import { StudyModule } from './study/study.module';
 import { VideoGateway } from './gateway/video.gateway';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import { VideoGateway } from './gateway/video.gateway';
         database: configService.get('DB_NAME'),
         entities: ['dist/**/*.entity.{ts,js}'],
         synchronize: configService.get('DB_SYNC'),
-        logging: true,
+        logging: configService.get('DB_SYNC'),
       }),
     }),
     UserModule,
@@ -52,6 +53,7 @@ import { VideoGateway } from './gateway/video.gateway';
     EmailModule,
     LectureModule,
     StudyModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService, VideoGateway],
